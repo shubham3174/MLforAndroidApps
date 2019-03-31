@@ -36,3 +36,6 @@ def main():
 		print line
 	f.close()
 
+
+if __name__ == "__name__":
+	main()
