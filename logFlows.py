@@ -6,14 +6,16 @@ import logging
 import os
 
 # for packet parsing
-import dpkt
+import pyshark
 
 def parse_packet(packet):
-	return 0
+	print packet.info
 
 def parse_file(file):
-	for ts, pkt in dpkt.pcap.Reader(open(file, 'r')):
-		print ts, pkt
+	packets = pyshark.FileCapture(file)
+	for packet in packets:
+		parse_packet(packet)
+		return 0
 
 	return 0
 
@@ -27,13 +29,8 @@ def main():
 		logging.error("input a valid file to be parsed")
 		exit()
 
-#	parse_file(args.file)
+	parse_file(args.file)
 
-	f = open(args.file, "r")
-	lines = f.readlines()
-	for line in lines:
-		print line
-	f.close()
 
 if __name__ == "__main__":
 	main()
