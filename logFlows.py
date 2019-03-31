@@ -56,15 +56,15 @@ class Packet():
 		self.protocol = protocol
 
 	def pretty_print(self):
-		print "Source IP: ", self.src_ip
-		print "Source Port: ", self.src_port
-		print "Destination IP: ", self.dst_ip
-		print "Destination Port: ", self.dst_port
-		print "Protocol: ", self.protocol
+		print("Source IP: ", self.src_ip)
+		print("Source Port: ", self.src_port)
+		print("Destination IP: ", self.dst_ip)
+		print("Destination Port: ", self.dst_port)
+		print("Protocol: ", self.protocol)
 
 def parse_packet(packet):
 	if 'ip' not in str(dir(packet)):
-		print packet.pretty_print()
+		print(packet.pretty_print())
 		import pdb; pdb.set_trace()
 	pkt = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer)
 	return pkt
