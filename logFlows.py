@@ -27,7 +27,7 @@ class Packet():
 		self.dst_port = dst_port
 		self.protocol = protocol
 
-	def print(self):
+	def pretty_print(self):
 		print "Source IP: ", self.src_ip
 		print "Source Port: ", self.src_port
 		print "Destination IP: ", self.dst_ip
@@ -35,16 +35,19 @@ class Packet():
 		print "Protocol: ", self.protocol
 
 def parse_packet(packet):
-	pkt = Packet(packet.src, packet.dst, None, None, None)
+	pkt = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer)
 	return pkt
 
 def parse_file(file):
+	list_of_packets = []
+
 	packets = pyshark.FileCapture(file)
 	for packet in packets:
-		parse_packet(packet)
-		return 0
+		parsed_packet = parse_packet(packet)
+		parsed_packet.pretty_print()
+		list_of_packets.append(parsed_packet)
 
-	return 0
+	return list_of_packets
 
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
