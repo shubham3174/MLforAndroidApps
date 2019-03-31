@@ -8,6 +8,36 @@ import os
 # for packet parsing
 import pyshark
 
+# burst structure
+class Burst():
+	src_ip = None
+	dst_ip = None
+	src_port = None
+	dst_port = None
+	protocol = None
+	num_packets_sent = None	
+	num_packets_recv = None
+	num_bytes_sent = None
+	num_bytes_recv = None
+
+	def __init__(self, packets):
+		self.src_ip = packets[0].src_ip
+		self.dst_ip = packets[0].dst_ip
+		self.src_port = packets[0].src_port
+		self.dst_port = packets[0].dst_port
+		self.protocol = packets[0].protocol
+			
+		self.num_packets_sent = 0
+		self.num_packets_recv = 0
+		self.num_bytes_sent = None
+		self.num_bytes_recv = None
+
+		for packet in packets:
+			self.num_packets_sent += 1
+			self.num_bytes_sent += packet.num_bytes_sent			
+
+
+
 # packet structure
 class Packet():
 	src_ip = None
@@ -16,9 +46,7 @@ class Packet():
 	dst_port = None
 	protocol = None
 	num_packets_sent = None
-	num_packets_recv = None
 	num_bytes_sent = None
-	num_bytes_recv = None
 	
 	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol):
 		self.src_ip = src_ip
