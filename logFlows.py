@@ -27,4 +27,12 @@ def main():
 		logging.error("input a valid file to be parsed")
 		exit()
 
-	parse_file(args.file)
+#	parse_file(args.file)
+	
+
+	f = open(args.file, "r")
+	lines = f.readlines()
+	for line in lines:
+		print line
+	f.close()
+
