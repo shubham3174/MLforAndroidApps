@@ -35,6 +35,9 @@ class Packet():
 		print "Protocol: ", self.protocol
 
 def parse_packet(packet):
+	if 'ip' not in str(dir(packet)):
+		print packet.pretty_print()
+		import pdb; pdb.set_trace()
 	pkt = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer)
 	return pkt
 
