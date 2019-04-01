@@ -39,7 +39,7 @@ class Burst():
 		for flow in self.flows:
 			flow.clean_me()
 			self.flows.remove(flow)
-		del flow.packets
+#		del flow.packets
 #		print flow.packets
 		self.flows = []	
 
@@ -197,7 +197,7 @@ def main():
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				burst.pretty_print()
 				burst.clean_me()
-				del burst.flows
+#				del burst.flows
 				burst = copy.deepcopy([])
 				burst = Burst(ppacket)
 			else:
