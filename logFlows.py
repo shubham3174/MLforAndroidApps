@@ -31,7 +31,10 @@ class Burst():
 
 	def clean_me(self):
 		self.timestamp_lastrecvppacket = 0.0
-		#copy.deepcopy(self.flows, [])	
+		for flow in self.flows:
+			self.flows.remove(flow)
+
+		self.flows = []	
 
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
@@ -77,13 +80,14 @@ class Flow():
 		self.length += ppacket.length
 		
 	def pretty_print(self):
-#		print("~~~ New Flow ~~~")
-#		print("Source IP: {}".format(self.src_ip))
-#		print("Source Port: {}".format(self.src_port))
-#		print("Destination IP: {}".format(self.dst_ip))
-#		print("Destination Port: {}".format(self.dst_port))
-#		print("Protocol: {}".format(self.protocol))
+		print("~~~ New Flow ~~~")
+		print("Source IP: {}".format(self.src_ip))
+		print("Source Port: {}".format(self.src_port))
+		print("Destination IP: {}".format(self.dst_ip))
+		print("Destination Port: {}".format(self.dst_port))
+		print("Protocol: {}".format(self.protocol))
 		print("Timestamp: {}".format(self.timestamp))
+<<<<<<< HEAD
 <<<<<<< HEAD
 		print("Packets sent: {}".format(self.num_packets_sent))
 		print("Bytes sent: {}".format(self.num_bytes_sent))
@@ -92,6 +96,10 @@ class Flow():
 #		print("Packets sent: {}".format(self.num_packets_sent))
 #		print("Bytes sent: {}".format(self.num_bytes_sent))
 >>>>>>> 4451813235111063320a354c603239bcf6e29f00
+=======
+		print("Packets sent: {}".format(self.num_packets_sent))
+		print("Bytes sent: {}".format(self.num_bytes_sent))
+>>>>>>> 6d9b3ce006ee8ce48814175299ef1c0150dafffa
 
 # packet structure
 class Packet():
