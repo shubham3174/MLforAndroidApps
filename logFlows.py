@@ -10,45 +10,22 @@ import pyshark
 
 # burst structure
 class Burst():
-	timestamp = None
-	src_ip = None
-	dst_ip = None
-	src_port = None
-	dst_port = None
-	protocol = None
-	num_packets_sent = 0
-	num_packets_recv = 0
-	num_bytes_sent = 0
-	num_bytes_recv = 0
+	timestamp_lastrecvppacket = 0
+	flows = []
 
-	def __init__(self, packets):
-		self.src_ip = packets[0].src_ip
-		self.dst_ip = packets[0].dst_ip
-		self.src_port = packets[0].src_port
-		self.dst_port = packets[0].dst_port
-		self.protocol = packets[0].protocol
-			
-		self.num_packets_sent = 0
-		self.num_packets_recv = 0
-		self.num_bytes_sent = 0
-		self.num_bytes_recv = 0
+	def __init__(self, firstppacket):
+		self.add_ppacket(firstppacket)
+		self.timestamp_lastrecvppacket = firstppacket.timestamp
+		
+	def add_ppacket(self, ppacket):
+		# TODO change to what larson has
+		newFlow = Flow([ppacket])
+		self.flows.append(newFlow)
 
-		# for packet in packets:
-			# self.num_packets_sent += 1
-			# self.num_bytes_sent += packet.num_bytes_sent	
-			# 
-	def print_burst(self):
+	def pretty_print(self):
 		print("~~~ New Burst ~~~")
-		print(self.timestamp)
-		print(self.src_ip)
-		print(self.dst_ip)
-		print(self.src_port)
-		print(self.dst_port)
-		print(self.protocol)
-		print(self.num_packets_sent)
-		print(self.num_packets_recv)
-		print(self.num_bytes_sent)
-		print(self.num_bytes_recv)
+		for flow in self.flows:
+			flow.pretty_print()
 
 class Flow():
 	timestamp = None
@@ -71,8 +48,6 @@ class Flow():
 		self.num_packets_sent = len(packets)
 		self.num_bytes_sent = sum(packet.num_bytes_sent for packet in packets)
 		self.packets = packets
-
-	# def updateValues(self):
 
 	def printFlow(self):
 		# <timestamp> <srcaddr> <dstaddr> <srcport> <dstport> <proto>\<#packets sent> <#packets rcvd> <#bytes send> <#bytes rcvd>
@@ -166,12 +141,15 @@ def main():
 		if not os.path.exists(args.file):
 			logging.error("input a valid file to be parsed")
 			exit()
-
+	
 		# list of flows to be maintained
 		flows = []
 
 		packets = parse_file(args.file)
-
+		
+		burst = Burst(packet[0])
+		
+		
 		for packet in packets:
 			flows = addPacket(packet, flows)
 
