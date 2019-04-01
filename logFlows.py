@@ -16,8 +16,8 @@ class Burst():
 	src_port = None
 	dst_port = None
 	protocol = None
-	num_packets_sent = None	
-	num_packets_recv = None
+	num_packets_sent = 0
+	num_packets_recv = 0
 	num_bytes_sent = 0
 	num_bytes_recv = 0
 
@@ -77,6 +77,17 @@ class Flow():
 	def printFlow(self):
 		# <timestamp> <srcaddr> <dstaddr> <srcport> <dstport> <proto>\<#packets sent> <#packets rcvd> <#bytes send> <#bytes rcvd>
 		print(self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent)
+		
+	def pretty_print(self):
+		print("~~~ New Flow ~~~")
+		print("Source IP: ", self.src_ip)
+		print("Source Port: ", self.src_port)
+		print("Destination IP: ", self.dst_ip)
+		print("Destination Port: ", self.dst_port)
+		print("Protocol: ", self.protocol)
+		print("Timestamp: ", self.timestamp)
+		print("Packets sent: ", self.packets_sent)
+		print("Bytes sent: ", self.bytes)
 
 # packet structure
 class Packet():
@@ -106,10 +117,14 @@ class Packet():
 		print("Protocol: ", self.protocol)
 		print("Timestamp: ", self.timestamp)
 
+def addPacket(packet, flows):
+	newFlow = Flow([packet])
+	flows.append(newFlow)
+	return flows
+	
 def parse_packet(packet):
 	if 'ip' not in str(dir(packet)):
 		print(packet.pretty_print())
-
 
 	pkt = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer)
 	return pkt
@@ -119,7 +134,6 @@ def parse_packet(packet):
 		return pkt
 	except AttributeError:
 		return
-
 
 def parse_file(file):
 	list_of_packets = []
@@ -142,12 +156,6 @@ def live_parse():
 	for packet in iterate():
 		parsed_packet = parse_packet(packet)
 		parsed_packet.pretty_print()
-	
-
-def addPacket(packet, flows):
-	newFlow = Flow([packet])
-	flows.append(newFlow)
-	return flows
 
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
