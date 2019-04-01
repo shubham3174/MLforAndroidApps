@@ -12,19 +12,15 @@ import time
 
 # burst structure
 class Burst():
-	first = 0.0
 	timestamp_lastrecvppacket = 0.0
 	flows = []
 
 	def __init__(self, firstppacket):
-		self.first = firstppacket.timestamp
 		self.add_ppacket(firstppacket)
 		self.timestamp_lastrecvppacket = firstppacket.timestamp
 		
 	def add_ppacket(self, ppacket):
 		self.timestamp_lastrecvppacket = ppacket.timestamp
-		
-		# TODO change to what larson has
 		for flow in self.flows:
 			if flow.src_ip == ppacket.src_ip and flow.dst_ip == ppacket.dst_ip and flow.src_port == ppacket.src_port and flow.dst_ip == ppacket.dst_ip and flow.protocol == ppacket.protocol:
 				flow.add_ppacket(ppacket)
@@ -32,12 +28,15 @@ class Burst():
 		newFlow = Flow([ppacket])
 		self.flows.append(newFlow)
 
+
+	def clean_me(self):
+		self.timestamp_lastrecvppacket = 0.0
+		self.flows = []	
+
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
-		print(self.first)
-		print(self.timestamp_lastrecvppacket)
-#		for flow in self.flows:
-#			flow.pretty_print()
+		for flow in self.flows:
+			flow.pretty_print()
 
 class Flow():
 	timestamp = None
@@ -161,6 +160,7 @@ def main():
 		for ppacket in ppackets[1:]:
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				burst.pretty_print()
+			burst.clean_me()
 			burst = Burst(ppacket)
 
 		burst.pretty_print()
