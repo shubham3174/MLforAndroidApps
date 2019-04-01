@@ -18,6 +18,8 @@ class Burst():
 		self.timestamp_lastrecvppacket = firstppacket.timestamp
 		
 	def add_ppacket(self, ppacket):
+		self.timestamp_lastrecvppacket = ppacket.timestamp
+		
 		# TODO change to what larson has
 		newFlow = Flow([ppacket])
 		self.flows.append(newFlow)
@@ -91,18 +93,13 @@ class Packet():
 		print("Destination Port: ", self.dst_port)
 		print("Protocol: ", self.protocol)
 		print("Timestamp: ", self.timestamp)
-
-def addPacket(packet, flows):
-	newFlow = Flow([packet])
-	flows.append(newFlow)
-	return flows
 	
 # tries to make a Packet object from a packet
 # if the packet is incomplete then it returns None
 def parse_packet(packet):
 	try:
-		pkt = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp)
-		return pkt
+		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp)
+		return ppacket
 	except AttributeError:
 		return None
 
@@ -110,9 +107,9 @@ def parse_file(file):
 	list_of_packets = []
 	packets = pyshark.FileCapture(file)
 	for packet in packets:
-		parsed_packet = parse_packet(packet)
-		if parsed_packet is not None:
-			list_of_packets.append(parsed_packet)
+		ppacket = parse_packet(packet)
+		if ppacket is not None:
+			list_of_packets.append(ppacket)
 
 	return list_of_packets
 
@@ -121,10 +118,10 @@ def parse_live():
 	iterate = live_cap.sniff_continuously
 	
 	for packet in iterate():
-		parsed_packet = parse_packet(packet)
-		if parsed_packet is not None:
-			parsed_packet.pretty_print()
-			# TODO add burst stuff here
+		ppacket = parse_packet(packet)
+		if ppacket is not None:
+			ppacket.pretty_print()
+			# TODO burst
 
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
@@ -151,12 +148,7 @@ def main():
 		for ppacket in ppackets:
 			burst.add_ppacket(ppacket)
 
-<<<<<<< HEAD
-		ips = [(flow.src_ip, flow.dst_ip, flow.src_port, flow.dst_port) for flow in flows]
-		print(ips)
-=======
 		burst.pretty_print()
->>>>>>> 6d440b6e12de13aa294ec21f79d3fa7e6b4647c8
 
 
 if __name__ == "__main__":
