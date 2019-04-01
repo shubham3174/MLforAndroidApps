@@ -31,7 +31,7 @@ class Burst():
 
 	def clean_me(self):
 		self.timestamp_lastrecvppacket = 0.0
-		self.flows = []	
+		#copy.deepcopy(self.flows, [])	
 
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
@@ -70,15 +70,15 @@ class Flow():
 		self.num_bytes_sent += ppacket.num_bytes
 		
 	def pretty_print(self):
-		print("~~~ New Flow ~~~")
-		print("Source IP: {}".format(self.src_ip))
-		print("Source Port: {}".format(self.src_port))
-		print("Destination IP: {}".format(self.dst_ip))
-		print("Destination Port: {}".format(self.dst_port))
-		print("Protocol: {}".format(self.protocol))
+#		print("~~~ New Flow ~~~")
+#		print("Source IP: {}".format(self.src_ip))
+#		print("Source Port: {}".format(self.src_port))
+#		print("Destination IP: {}".format(self.dst_ip))
+#		print("Destination Port: {}".format(self.dst_port))
+#		print("Protocol: {}".format(self.protocol))
 		print("Timestamp: {}".format(self.timestamp))
-		print("Packets sent: {}".format(self.num_packets_sent))
-		print("Bytes sent: {}".format(self.num_bytes_sent))
+#		print("Packets sent: {}".format(self.num_packets_sent))
+#		print("Bytes sent: {}".format(self.num_bytes_sent))
 
 # packet structure
 class Packet():
@@ -137,12 +137,13 @@ def parse_live():
 	for packet in iterate():
 		ppacket = parse_packet(packet)
 		if ppacket is not None:
-			if first_ppacket = True:
-				burst = Burst(first_ppacket)
+			if first_ppacket == True:
+				burst = Burst(ppacket)
 				first_ppacket = False
 			else:
 				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 					burst.pretty_print()
+
 				burst.clean_me()
 				burst = Burst(ppacket)
 
