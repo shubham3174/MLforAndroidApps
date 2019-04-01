@@ -19,11 +19,18 @@ class Burst():
 		
 	def add_ppacket(self, ppacket):
 		# TODO change to what larson has
+		for flow in self.flows:
+			if flow.src_ip == ppacket.src_ip and flow.dst_ip == ppacket.dst_ip and flow.src_port == ppacket.src_port and flow.dst_ip == ppacket.dst_ip and flow.protocol == ppacket.protocol:
+				print("packet info matches")
+				flow.add_ppacket(ppacket)
+				return
 		newFlow = Flow([ppacket])
+		print("packet info does not match")
 		self.flows.append(newFlow)
 
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
+		print(self.flows)
 		for flow in self.flows:
 			flow.pretty_print()
 
@@ -46,16 +53,21 @@ class Flow():
 		self.dst_port = packets[0].dst_port
 		self.protocol = packets[0].protocol
 		self.num_packets_sent = len(packets)
-		self.num_bytes_sent = sum(packet.num_bytes_sent for packet in packets)
+		self.num_bytes_sent = sum(packet.num_bytes for packet in packets)
 		self.packets = packets
 
 	def printFlow(self):
 		# <timestamp> <srcaddr> <dstaddr> <srcport> <dstport> <proto>\<#packets sent> <#packets rcvd> <#bytes send> <#bytes rcvd>
 		print(self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent)
+
+	def add_ppacket(self, ppacket):
+		self.packets.append(ppacket)
+		self.num_packets_sent += 1
+		self.num_bytes_sent += ppacket.num_bytes
 		
 	def pretty_print(self):
 		print("~~~ New Flow ~~~")
-		print("Source IP: ", self.src_ip)
+		print("Source IP: ()".format(self.src_ip))
 		print("Source Port: ", self.src_port)
 		print("Destination IP: ", self.dst_ip)
 		print("Destination Port: ", self.dst_port)
@@ -72,10 +84,10 @@ class Packet():
 	dst_port = None
 	protocol = None
 	timestamp = None
-	num_packets_sent = None
-	num_bytes_sent = 0
+	num_bytes = 0
 	
 	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp):
+		#TODO: Make __init__ populate number of bytes
 		self.src_ip = src_ip
 		self.src_port = src_port
 		self.dst_ip = dst_ip
@@ -91,11 +103,6 @@ class Packet():
 		print("Destination Port: ", self.dst_port)
 		print("Protocol: ", self.protocol)
 		print("Timestamp: ", self.timestamp)
-
-def addPacket(packet, flows):
-	newFlow = Flow([packet])
-	flows.append(newFlow)
-	return flows
 	
 # tries to make a Packet object from a packet
 # if the packet is incomplete then it returns None
@@ -140,9 +147,6 @@ def main():
 		if not os.path.exists(args.file):
 			logging.error("input a valid file to be parsed")
 			exit()
-	
-		# list of flows to be maintained
-		flows = []
 
 		ppackets = parse_file(args.file)
 		
@@ -151,12 +155,7 @@ def main():
 		for ppacket in ppackets:
 			burst.add_ppacket(ppacket)
 
-<<<<<<< HEAD
-		ips = [(flow.src_ip, flow.dst_ip, flow.src_port, flow.dst_port) for flow in flows]
-		print(ips)
-=======
 		burst.pretty_print()
->>>>>>> 6d440b6e12de13aa294ec21f79d3fa7e6b4647c8
 
 
 if __name__ == "__main__":
