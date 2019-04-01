@@ -39,7 +39,7 @@ class Burst():
 			flow.clean_me()
 			self.flows.remove(flow)
 		del flow.packets
-		print flow.packets
+#		print flow.packets
 		self.flows = []	
 
 	def pretty_print(self):
@@ -81,11 +81,12 @@ class Flow():
 		self.num_bytes_sent += ppacket.num_bytes
 
 	def clean_me(self):
+#		print self.packets
 		for packet in self.packets:
 			self.packets.remove(packet)		
 
 		self.packets = []
-			
+#		print self.packets			
 		
 	def pretty_print(self):
 		print("~~~ New Flow ~~~")
@@ -99,9 +100,10 @@ class Flow():
 		print("Bytes sent: {}".format(self.num_bytes_sent))
 
 	def one_line_print(self):
+#		print self.packets
 		print("{} {} {} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent))
-#		for packet in self.packets:
-#			packet.one_line_print()
+		for packet in self.packets:
+			packet.one_line_print()
 		
 # packet structure
 class Packet():
