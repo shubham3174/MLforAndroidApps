@@ -133,11 +133,10 @@ def parse_packet(packet):
 
 def parse_file(file):
 	list_of_packets = []
-
 	packets = pyshark.FileCapture(file)
 	for packet in packets:
 		parsed_packet = parse_packet(packet)
-		if parsed_packed is not None:
+		if parsed_packet is not None:
 			list_of_packets.append(parsed_packet)
 
 	return list_of_packets
@@ -175,8 +174,8 @@ def main():
 		for packet in packets:
 			flows = addPacket(packet, flows)
 
-		for flow in flows:
-			flow.printFlow()
+		ips = [(flow.src_ip, flow.dst_ip, flow.src_port, flow.dst_port) for flow in flows]
+		print(ips)
 
 
 if __name__ == "__main__":
