@@ -61,8 +61,8 @@ class Flow():
 		print("Destination Port: ", self.dst_port)
 		print("Protocol: ", self.protocol)
 		print("Timestamp: ", self.timestamp)
-		print("Packets sent: ", self.packets_sent)
-		print("Bytes sent: ", self.bytes)
+		print("Packets sent: ", self.num_packets_sent)
+		print("Bytes sent: ", self.num_bytes_sent)
 
 # packet structure
 class Packet():
@@ -112,7 +112,7 @@ def parse_file(file):
 	packets = pyshark.FileCapture(file)
 	for packet in packets:
 		parsed_packet = parse_packet(packet)
-		if parsed_packed is not None:
+		if parsed_packet is not None:
 			list_of_packets.append(parsed_packet)
 
 	return list_of_packets
@@ -147,7 +147,7 @@ def main():
 
 		ppackets = parse_file(args.file)
 		
-		burst = Burst(packet[0])
+		burst = Burst(ppackets[0])
 		
 		for ppacket in ppackets:
 			burst.add_ppacket(ppacket)
