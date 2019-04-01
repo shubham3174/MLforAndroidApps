@@ -18,8 +18,8 @@ class Burst():
 	protocol = None
 	num_packets_sent = None	
 	num_packets_recv = None
-	num_bytes_sent = None
-	num_bytes_recv = None
+	num_bytes_sent = 0
+	num_bytes_recv = 0
 
 	def __init__(self, packets):
 		self.src_ip = packets[0].src_ip
@@ -30,8 +30,8 @@ class Burst():
 			
 		self.num_packets_sent = 0
 		self.num_packets_recv = 0
-		self.num_bytes_sent = None
-		self.num_bytes_recv = None
+		self.num_bytes_sent = 0
+		self.num_bytes_recv = 0
 
 		# for packet in packets:
 			# self.num_packets_sent += 1
@@ -57,12 +57,12 @@ class Flow():
 	src_port = None
 	dst_port = None
 	protocol = None
-	num_packets_sent = None
-	num_bytes_sent = None
+	num_packets_sent = 0
+	num_bytes_sent = 0
 	packets = None #list of all packets
 
 	def __init__(self, packets):
-		self.timestamp = packet[0].timestamp
+		self.timestamp = packets[0].timestamp
 		self.src_ip = packets[0].src_ip
 		self.dst_ip = packets[0].dst_ip
 		self.src_port = packets[0].src_port
@@ -72,9 +72,11 @@ class Flow():
 		self.num_bytes_sent = sum(packet.num_bytes_sent for packet in packets)
 		self.packets = packets
 
-	def updateValues(self):
-		for packet in self.packets:
+	# def updateValues(self):
 
+	def printFlow(self):
+		# <timestamp> <srcaddr> <dstaddr> <srcport> <dstport> <proto>\<#packets sent> <#packets rcvd> <#bytes send> <#bytes rcvd>
+		print(self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent)
 
 # packet structure
 class Packet():
@@ -85,7 +87,7 @@ class Packet():
 	protocol = None
 	timestamp = None
 	num_packets_sent = None
-	num_bytes_sent = None
+	num_bytes_sent = 0
 	
 	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp):
 		self.src_ip = src_ip
@@ -128,6 +130,11 @@ def parse_file(file):
 
 	return list_of_packets
 
+def addPacket(packet, flows):
+	newFlow = Flow([packet])
+	flows.append(newFlow)
+	return flows
+
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
 	parser.add_argument("-f", "--file", required=True, help="the file to parse")
@@ -144,9 +151,11 @@ def main():
 
 	packets = parse_file(args.file)
 
-	# for packet in packets:
-	# create flows based on source IP address, etc
-		
+	for packet in packets:
+		flows = addPacket(packet, flows)
+
+	for flow in flows:
+		flow.printFlow()
 
 
 if __name__ == "__main__":
