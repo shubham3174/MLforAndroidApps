@@ -65,7 +65,7 @@ class Packet():
 def parse_packet(packet):
 	if 'ip' not in str(dir(packet)):
 		print(packet.pretty_print())
-		import pdb; pdb.set_trace()
+
 	pkt = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer)
 	return pkt
 
@@ -80,11 +80,23 @@ def parse_file(file):
 
 	return list_of_packets
 
+def live_parse():
+	live_cap = pyshark.LiveCapture(interface="eth0")
+	iterate = live_cap.sniff_continuously
+	
+	for packet in iterate():
+		parsed_packet = parse_packet(packet)
+		parsed_packet.pretty_print()
+	
+
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
-	parser.add_argument("-f", "--file", required=True, help="the file to parse")
+	parser.add_argument("-f", "--file", help="the file to parse")
 	
 	args = parser.parse_args()
+
+	live_parse()
+	exit()
 
 	if not os.path.exists(args.file):
 		logging.error("input a valid file to be parsed")
