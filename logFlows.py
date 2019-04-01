@@ -38,13 +38,9 @@ class Burst():
 
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
-<<<<<<< HEAD
-# 		print(self.first)
-# 		print(self.timestamp_lastrecvppacket)
-=======
->>>>>>> 4451813235111063320a354c603239bcf6e29f00
 		for flow in self.flows:
-			flow.pretty_print()
+			# flow.pretty_print()
+			flow.one_line_print()
 
 class Flow():
 	timestamp = None
@@ -77,7 +73,6 @@ class Flow():
 		self.packets.append(ppacket)
 		self.num_packets_sent += 1
 		self.num_bytes_sent += ppacket.num_bytes
-		self.length += ppacket.length
 		
 	def pretty_print(self):
 		print("~~~ New Flow ~~~")
@@ -87,20 +82,14 @@ class Flow():
 		print("Destination Port: {}".format(self.dst_port))
 		print("Protocol: {}".format(self.protocol))
 		print("Timestamp: {}".format(self.timestamp))
-<<<<<<< HEAD
-<<<<<<< HEAD
 		print("Packets sent: {}".format(self.num_packets_sent))
 		print("Bytes sent: {}".format(self.num_bytes_sent))
-		print("Length: {}".format(self.length))
-=======
-#		print("Packets sent: {}".format(self.num_packets_sent))
-#		print("Bytes sent: {}".format(self.num_bytes_sent))
->>>>>>> 4451813235111063320a354c603239bcf6e29f00
-=======
-		print("Packets sent: {}".format(self.num_packets_sent))
-		print("Bytes sent: {}".format(self.num_bytes_sent))
->>>>>>> 6d9b3ce006ee8ce48814175299ef1c0150dafffa
 
+	def one_line_print(self):
+		print("{} {} {} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent))
+		for packet in self.packets:
+			packet.one_line_print()
+		
 # packet structure
 class Packet():
 	src_ip = None
@@ -110,9 +99,8 @@ class Packet():
 	protocol = None
 	timestamp = None
 	num_bytes = 0
-	length = 0
 	
-	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp, num_bytes, length):
+	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp, num_bytes):
 		#TODO: Make __init__ populate number of bytes
 		self.src_ip = src_ip
 		self.src_port = src_port
@@ -121,7 +109,6 @@ class Packet():
 		self.protocol = protocol
 		self.timestamp = float(timestamp)
 		self.num_bytes = num_bytes
-		self.length = length
 
 	def pretty_print(self):
 		print("~~~ New Packet ~~~")
@@ -131,13 +118,16 @@ class Packet():
 		print("Destination Port: ", self.dst_port)
 		print("Protocol: ", self.protocol)
 		print("Timestamp: ", self.timestamp)
+
+	def one_line_print(self):
+		print("\t{} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol))
 	
 	
 # tries to make a Packet object from a packet
 # if the packet is incomplete then it returns None
 def parse_packet(packet):
 	try:
-		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp, int(packet.length), len(packet))
+		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp, int(packet.length))
 		return ppacket
 	except AttributeError:
 		return None
