@@ -34,10 +34,10 @@ class Burst():
 
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
-		print(self.first)
-		print(self.timestamp_lastrecvppacket)
-#		for flow in self.flows:
-#			flow.pretty_print()
+# 		print(self.first)
+# 		print(self.timestamp_lastrecvppacket)
+		for flow in self.flows:
+			flow.pretty_print()
 
 class Flow():
 	timestamp = None
@@ -49,6 +49,7 @@ class Flow():
 	num_packets_sent = 0
 	num_bytes_sent = 0
 	packets = None #list of all packets
+	length = 0
 
 	def __init__(self, packets):
 		self.timestamp = packets[0].timestamp
@@ -69,6 +70,7 @@ class Flow():
 		self.packets.append(ppacket)
 		self.num_packets_sent += 1
 		self.num_bytes_sent += ppacket.num_bytes
+		self.length += ppacket.length
 		
 	def pretty_print(self):
 		print("~~~ New Flow ~~~")
@@ -80,6 +82,7 @@ class Flow():
 		print("Timestamp: {}".format(self.timestamp))
 		print("Packets sent: {}".format(self.num_packets_sent))
 		print("Bytes sent: {}".format(self.num_bytes_sent))
+		print("Length: {}".format(self.length))
 
 # packet structure
 class Packet():
@@ -90,8 +93,9 @@ class Packet():
 	protocol = None
 	timestamp = None
 	num_bytes = 0
+	length = 0
 	
-	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp):
+	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp, num_bytes, length):
 		#TODO: Make __init__ populate number of bytes
 		self.src_ip = src_ip
 		self.src_port = src_port
@@ -99,6 +103,8 @@ class Packet():
 		self.dst_port = dst_port
 		self.protocol = protocol
 		self.timestamp = float(timestamp)
+		self.num_bytes = num_bytes
+		self.length = length
 
 	def pretty_print(self):
 		print("~~~ New Packet ~~~")
@@ -114,7 +120,7 @@ class Packet():
 # if the packet is incomplete then it returns None
 def parse_packet(packet):
 	try:
-		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp)
+		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp, int(packet.length), len(packet))
 		return ppacket
 	except AttributeError:
 		return None
