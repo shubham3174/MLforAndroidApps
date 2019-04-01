@@ -154,7 +154,7 @@ def parse_live():
 
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
-	parser.add_argument("-l", "--liveparse", action=store_true, help="live parse packets")
+	parser.add_argument("-l", "--liveparse", action="store_true", help="live parse packets")
 	parser.add_argument("-f", "--file", help="the file to parse")
 	
 	args = parser.parse_args()
