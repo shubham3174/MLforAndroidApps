@@ -12,19 +12,15 @@ import time
 
 # burst structure
 class Burst():
-	first = 0.0
 	timestamp_lastrecvppacket = 0.0
 	flows = []
 
 	def __init__(self, firstppacket):
-		self.first = firstppacket.timestamp
 		self.add_ppacket(firstppacket)
 		self.timestamp_lastrecvppacket = firstppacket.timestamp
 		
 	def add_ppacket(self, ppacket):
 		self.timestamp_lastrecvppacket = ppacket.timestamp
-		
-		# TODO change to what larson has
 		for flow in self.flows:
 			if flow.src_ip == ppacket.src_ip and flow.dst_ip == ppacket.dst_ip and flow.src_port == ppacket.src_port and flow.dst_ip == ppacket.dst_ip and flow.protocol == ppacket.protocol:
 				flow.add_ppacket(ppacket)
@@ -32,10 +28,18 @@ class Burst():
 		newFlow = Flow([ppacket])
 		self.flows.append(newFlow)
 
+
+	def clean_me(self):
+		self.timestamp_lastrecvppacket = 0.0
+		#copy.deepcopy(self.flows, [])	
+
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
+<<<<<<< HEAD
 # 		print(self.first)
 # 		print(self.timestamp_lastrecvppacket)
+=======
+>>>>>>> 4451813235111063320a354c603239bcf6e29f00
 		for flow in self.flows:
 			flow.pretty_print()
 
@@ -73,16 +77,21 @@ class Flow():
 		self.length += ppacket.length
 		
 	def pretty_print(self):
-		print("~~~ New Flow ~~~")
-		print("Source IP: {}".format(self.src_ip))
-		print("Source Port: {}".format(self.src_port))
-		print("Destination IP: {}".format(self.dst_ip))
-		print("Destination Port: {}".format(self.dst_port))
-		print("Protocol: {}".format(self.protocol))
+#		print("~~~ New Flow ~~~")
+#		print("Source IP: {}".format(self.src_ip))
+#		print("Source Port: {}".format(self.src_port))
+#		print("Destination IP: {}".format(self.dst_ip))
+#		print("Destination Port: {}".format(self.dst_port))
+#		print("Protocol: {}".format(self.protocol))
 		print("Timestamp: {}".format(self.timestamp))
+<<<<<<< HEAD
 		print("Packets sent: {}".format(self.num_packets_sent))
 		print("Bytes sent: {}".format(self.num_bytes_sent))
 		print("Length: {}".format(self.length))
+=======
+#		print("Packets sent: {}".format(self.num_packets_sent))
+#		print("Bytes sent: {}".format(self.num_bytes_sent))
+>>>>>>> 4451813235111063320a354c603239bcf6e29f00
 
 # packet structure
 class Packet():
@@ -136,14 +145,23 @@ def parse_file(file):
 	return list_of_packets
 
 def parse_live():
+	first_ppacket = True
+
 	live_cap = pyshark.LiveCapture(interface="eth1")
 	iterate = live_cap.sniff_continuously
 	
 	for packet in iterate():
 		ppacket = parse_packet(packet)
 		if ppacket is not None:
-			ppacket.pretty_print()
-			# TODO burst
+			if first_ppacket == True:
+				burst = Burst(ppacket)
+				first_ppacket = False
+			else:
+				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+					burst.pretty_print()
+
+				burst.clean_me()
+				burst = Burst(ppacket)
 
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
@@ -154,7 +172,6 @@ def main():
 
 	if args.liveparse:
 		parse_live()
-		exit()
 	else:
 		if not os.path.exists(args.file):
 			logging.error("input a valid file to be parsed")
@@ -167,9 +184,8 @@ def main():
 		for ppacket in ppackets[1:]:
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				burst.pretty_print()
+			burst.clean_me()
 			burst = Burst(ppacket)
-
-		burst.pretty_print()
 
 
 if __name__ == "__main__":
