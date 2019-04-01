@@ -22,7 +22,7 @@ class Burst():
 	def add_ppacket(self, ppacket):
 		self.timestamp_lastrecvppacket = ppacket.timestamp
 		for flow in self.flows:
-			if flow.src_ip == ppacket.src_ip and flow.dst_ip == ppacket.dst_ip and flow.src_port == ppacket.src_port and flow.dst_ip == ppacket.dst_ip and flow.protocol == ppacket.protocol:
+			if flow.src_ip == ppacket.src_ip and flow.dst_ip == ppacket.dst_ip and flow.src_port == ppacket.src_port and flow.dst_port == ppacket.dst_port and flow.protocol == ppacket.protocol:
 				flow.add_ppacket(ppacket)
 				return
 		newFlow = Flow([ppacket])
@@ -158,9 +158,10 @@ def parse_live():
 				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 					burst.pretty_print()
 
-				burst.clean_me()
-				burst = Burst(ppacket)
-
+					burst.clean_me()
+					burst = Burst(ppacket)
+				else:
+					burst.add_ppacket(ppacket)
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
 	parser.add_argument("-l", "--liveparse", action="store_true", help="live parse packets")
@@ -182,9 +183,10 @@ def main():
 		for ppacket in ppackets[1:]:
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				burst.pretty_print()
-			burst.clean_me()
-			burst = Burst(ppacket)
-
+				burst.clean_me()
+				burst = Burst(ppacket)
+			else:
+				burst.add_ppacket(ppacket)
 
 if __name__ == "__main__":
 	main()
