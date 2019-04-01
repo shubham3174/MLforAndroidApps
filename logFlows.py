@@ -12,7 +12,7 @@ import time
 
 # burst structure
 class Burst():
-	timestamp_lastrecvppacket = 0
+	timestamp_lastrecvppacket = 0.0
 	flows = []
 
 	def __init__(self, firstppacket):
@@ -145,8 +145,10 @@ def main():
 		
 		burst = Burst(ppackets[0])
 		
-		for ppacket in ppackets:
-			burst.add_ppacket(ppacket)
+		for ppacket in ppackets[1:]:
+			if ppacket.timestamp >= burst.timestamp_lastrecvppacket:
+				burst.pretty_print()
+			burst = Burst(ppacket)
 
 		burst.pretty_print()
 
