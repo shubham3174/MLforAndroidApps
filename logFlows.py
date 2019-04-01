@@ -7,32 +7,37 @@ import os
 
 # for packet parsing
 import pyshark
+import datetime
+import time
 
 # burst structure
 class Burst():
-	timestamp_lastrecvppacket = 0
+	first = 0.0
+	timestamp_lastrecvppacket = 0.0
 	flows = []
 
 	def __init__(self, firstppacket):
+		self.first = firstppacket.timestamp
 		self.add_ppacket(firstppacket)
 		self.timestamp_lastrecvppacket = firstppacket.timestamp
 		
 	def add_ppacket(self, ppacket):
+		self.timestamp_lastrecvppacket = ppacket.timestamp
+		
 		# TODO change to what larson has
 		for flow in self.flows:
 			if flow.src_ip == ppacket.src_ip and flow.dst_ip == ppacket.dst_ip and flow.src_port == ppacket.src_port and flow.dst_ip == ppacket.dst_ip and flow.protocol == ppacket.protocol:
-				print("packet info matches")
 				flow.add_ppacket(ppacket)
 				return
 		newFlow = Flow([ppacket])
-		print("packet info does not match")
 		self.flows.append(newFlow)
 
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
-		print(self.flows)
-		for flow in self.flows:
-			flow.pretty_print()
+		print(self.first)
+		print(self.timestamp_lastrecvppacket)
+#		for flow in self.flows:
+#			flow.pretty_print()
 
 class Flow():
 	timestamp = None
@@ -93,7 +98,7 @@ class Packet():
 		self.dst_ip = dst_ip
 		self.dst_port = dst_port
 		self.protocol = protocol
-		self.timestamp = timestamp
+		self.timestamp = float(timestamp)
 
 	def pretty_print(self):
 		print("~~~ New Packet ~~~")
@@ -104,12 +109,13 @@ class Packet():
 		print("Protocol: ", self.protocol)
 		print("Timestamp: ", self.timestamp)
 	
+	
 # tries to make a Packet object from a packet
 # if the packet is incomplete then it returns None
 def parse_packet(packet):
 	try:
-		pkt = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp)
-		return pkt
+		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp)
+		return ppacket
 	except AttributeError:
 		return None
 
@@ -117,9 +123,9 @@ def parse_file(file):
 	list_of_packets = []
 	packets = pyshark.FileCapture(file)
 	for packet in packets:
-		parsed_packet = parse_packet(packet)
-		if parsed_packet is not None:
-			list_of_packets.append(parsed_packet)
+		ppacket = parse_packet(packet)
+		if ppacket is not None:
+			list_of_packets.append(ppacket)
 
 	return list_of_packets
 
@@ -128,10 +134,10 @@ def parse_live():
 	iterate = live_cap.sniff_continuously
 	
 	for packet in iterate():
-		parsed_packet = parse_packet(packet)
-		if parsed_packet is not None:
-			parsed_packet.pretty_print()
-			# TODO add burst stuff here
+		ppacket = parse_packet(packet)
+		if ppacket is not None:
+			ppacket.pretty_print()
+			# TODO burst
 
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
@@ -152,8 +158,10 @@ def main():
 		
 		burst = Burst(ppackets[0])
 		
-		for ppacket in ppackets:
-			burst.add_ppacket(ppacket)
+		for ppacket in ppackets[1:]:
+			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+				burst.pretty_print()
+			burst = Burst(ppacket)
 
 		burst.pretty_print()
 
