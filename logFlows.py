@@ -22,7 +22,8 @@ class Burst():
 	def __init__(self, firstppacket):
 		self.add_ppacket(firstppacket)
 		self.timestamp_lastrecvppacket = firstppacket.timestamp
-		
+		self.flows = []	
+	
 	def add_ppacket(self, ppacket):
 		self.timestamp_lastrecvppacket = ppacket.timestamp
 		for flow in self.flows:
@@ -67,13 +68,9 @@ class Flow():
 		self.src_port = ppacket.src_port
 		self.dst_port = ppacket.dst_port
 		self.protocol = ppacket.protocol
-		self.num_packets_sent = 1
-		self.num_bytes_sent = ppacket.num_bytes
-		self.packets.append(ppacket)
-
-	def printFlow(self):
-		# <timestamp> <srcaddr> <dstaddr> <srcport> <dstport> <proto>\<#packets sent> <#packets rcvd> <#bytes send> <#bytes rcvd>
-		print(self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent)
+#		print 'test', self.packets
+		self.packets = []
+		self.add_ppacket(ppacket)
 
 	def add_ppacket(self, ppacket):
 		self.packets.append(ppacket)
