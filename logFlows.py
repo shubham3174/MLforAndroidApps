@@ -87,8 +87,8 @@ class Flow():
 
 	def one_line_print(self):
 		print("{} {} {} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent))
-		for packet in self.packets:
-			packet.one_line_print()
+#		for packet in self.packets:
+#			packet.one_line_print()
 		
 # packet structure
 class Packet():
