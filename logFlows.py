@@ -129,14 +129,22 @@ def parse_file(file):
 	return list_of_packets
 
 def parse_live():
+	first_ppacket = True
+
 	live_cap = pyshark.LiveCapture(interface="eth1")
 	iterate = live_cap.sniff_continuously
 	
 	for packet in iterate():
 		ppacket = parse_packet(packet)
 		if ppacket is not None:
-			ppacket.pretty_print()
-			# TODO burst
+			if first_ppacket = True:
+				burst = Burst(first_ppacket)
+				first_ppacket = False
+			else:
+				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+					burst.pretty_print()
+				burst.clean_me()
+				burst = Burst(ppacket)
 
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
@@ -147,7 +155,6 @@ def main():
 
 	if args.liveparse:
 		parse_live()
-		exit()
 	else:
 		if not os.path.exists(args.file):
 			logging.error("input a valid file to be parsed")
@@ -162,8 +169,6 @@ def main():
 				burst.pretty_print()
 			burst.clean_me()
 			burst = Burst(ppacket)
-
-		burst.pretty_print()
 
 
 if __name__ == "__main__":
