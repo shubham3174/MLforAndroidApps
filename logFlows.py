@@ -8,6 +8,7 @@ import os
 # for packet parsing
 import pyshark
 import datetime
+import time
 
 # burst structure
 class Burst():
@@ -84,7 +85,7 @@ class Packet():
 		self.dst_ip = dst_ip
 		self.dst_port = dst_port
 		self.protocol = protocol
-		self.timestamp = datetime.datetime.fromtimestamp(timestamp)
+		self.timestamp = float(timestamp)
 
 	def pretty_print(self):
 		print("~~~ New Packet ~~~")
@@ -94,6 +95,7 @@ class Packet():
 		print("Destination Port: ", self.dst_port)
 		print("Protocol: ", self.protocol)
 		print("Timestamp: ", self.timestamp)
+	
 	
 # tries to make a Packet object from a packet
 # if the packet is incomplete then it returns None
