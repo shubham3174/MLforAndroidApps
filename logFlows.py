@@ -12,10 +12,12 @@ import time
 
 # burst structure
 class Burst():
+	first = 0.0
 	timestamp_lastrecvppacket = 0.0
 	flows = []
 
 	def __init__(self, firstppacket):
+		self.first = firstppacket.timestamp
 		self.add_ppacket(firstppacket)
 		self.timestamp_lastrecvppacket = firstppacket.timestamp
 		
@@ -28,8 +30,10 @@ class Burst():
 
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
-		for flow in self.flows:
-			flow.pretty_print()
+		print(self.first)
+		print(self.timestamp_lastrecvppacket)
+#		for flow in self.flows:
+#			flow.pretty_print()
 
 class Flow():
 	timestamp = None
@@ -146,7 +150,7 @@ def main():
 		burst = Burst(ppackets[0])
 		
 		for ppacket in ppackets[1:]:
-			if ppacket.timestamp >= burst.timestamp_lastrecvppacket:
+			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				burst.pretty_print()
 			burst = Burst(ppacket)
 
