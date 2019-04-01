@@ -145,16 +145,14 @@ def main():
 		# list of flows to be maintained
 		flows = []
 
-		packets = parse_file(args.file)
+		ppackets = parse_file(args.file)
 		
 		burst = Burst(packet[0])
 		
-		
-		for packet in packets:
-			flows = addPacket(packet, flows)
+		for ppacket in ppackets:
+			burst.add_ppacket(ppacket)
 
-		for flow in flows:
-			flow.printFlow()
+		burst.pretty_print()
 
 
 if __name__ == "__main__":
