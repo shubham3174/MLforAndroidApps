@@ -122,18 +122,14 @@ def addPacket(packet, flows):
 	flows.append(newFlow)
 	return flows
 	
+# tries to make a Packet object from a packet
+# if the packet is incomplete then it returns None
 def parse_packet(packet):
-	if 'ip' not in str(dir(packet)):
-		print(packet.pretty_print())
-
-	pkt = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer)
-	return pkt
-
 	try:
 		pkt = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp)
 		return pkt
 	except AttributeError:
-		return
+		return None
 
 def parse_file(file):
 	list_of_packets = []
@@ -141,46 +137,46 @@ def parse_file(file):
 	packets = pyshark.FileCapture(file)
 	for packet in packets:
 		parsed_packet = parse_packet(packet)
-		try:
-			parsed_packet.pretty_print()
-		except AttributeError:
-			continue
-		list_of_packets.append(parsed_packet)
+		if parsed_packed is not None:
+			list_of_packets.append(parsed_packet)
 
 	return list_of_packets
 
-def live_parse():
-	live_cap = pyshark.LiveCapture(interface="eth0")
+def parse_live():
+	live_cap = pyshark.LiveCapture(interface="eth1")
 	iterate = live_cap.sniff_continuously
 	
 	for packet in iterate():
 		parsed_packet = parse_packet(packet)
-		parsed_packet.pretty_print()
+		if parsed_packet is not None:
+			parsed_packet.pretty_print()
+			# TODO add burst stuff here
 
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
+	parser.add_argument("-l", "--liveparse", action=store_true, help="live parse packets")
 	parser.add_argument("-f", "--file", help="the file to parse")
 	
 	args = parser.parse_args()
 
-	live_parse()
-	exit()
-
-	if not os.path.exists(args.file):
-		logging.error("input a valid file to be parsed")
+	if args.liveparse:
+		parse_live()
 		exit()
+	else:
+		if not os.path.exists(args.file):
+			logging.error("input a valid file to be parsed")
+			exit()
 
-	# list of flows to be maintained
-	# a flow 
-	flows = []
+		# list of flows to be maintained
+		flows = []
 
-	packets = parse_file(args.file)
+		packets = parse_file(args.file)
 
-	for packet in packets:
-		flows = addPacket(packet, flows)
+		for packet in packets:
+			flows = addPacket(packet, flows)
 
-	for flow in flows:
-		flow.printFlow()
+		for flow in flows:
+			flow.printFlow()
 
 
 if __name__ == "__main__":
