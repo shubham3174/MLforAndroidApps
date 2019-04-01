@@ -25,14 +25,16 @@ class Burst():
 			if flow.src_ip == ppacket.src_ip and flow.dst_ip == ppacket.dst_ip and flow.src_port == ppacket.src_port and flow.dst_port == ppacket.dst_port and flow.protocol == ppacket.protocol:
 				flow.add_ppacket(ppacket)
 				return
-		newFlow = Flow([ppacket])
+		newFlow = Flow(ppacket)
 		self.flows.append(newFlow)
 
 
 	def clean_me(self):
 		self.timestamp_lastrecvppacket = 0.0
 		for flow in self.flows:
+			flow.clean_me()
 			self.flows.remove(flow)
+			del flow
 
 		self.flows = []	
 
@@ -51,19 +53,19 @@ class Flow():
 	protocol = None
 	num_packets_sent = 0
 	num_bytes_sent = 0
-	packets = None #list of all packets
+	packets = []
 	length = 0
 
-	def __init__(self, packets):
-		self.timestamp = packets[0].timestamp
-		self.src_ip = packets[0].src_ip
-		self.dst_ip = packets[0].dst_ip
-		self.src_port = packets[0].src_port
-		self.dst_port = packets[0].dst_port
-		self.protocol = packets[0].protocol
-		self.num_packets_sent = len(packets)
-		self.num_bytes_sent = sum(packet.num_bytes for packet in packets)
-		self.packets = packets
+	def __init__(self, ppacket):
+		self.timestamp = ppacket.timestamp
+		self.src_ip = ppacket.src_ip
+		self.dst_ip = ppacket.dst_ip
+		self.src_port = ppacket.src_port
+		self.dst_port = ppacket.dst_port
+		self.protocol = ppacket.protocol
+		self.num_packets_sent = 1
+		self.num_bytes_sent = ppacket.num_bytes
+		self.packets.append(ppacket)
 
 	def printFlow(self):
 		# <timestamp> <srcaddr> <dstaddr> <srcport> <dstport> <proto>\<#packets sent> <#packets rcvd> <#bytes send> <#bytes rcvd>
@@ -73,6 +75,14 @@ class Flow():
 		self.packets.append(ppacket)
 		self.num_packets_sent += 1
 		self.num_bytes_sent += ppacket.num_bytes
+
+	def clean_me(self):
+		for packet in self.packets:
+			self.packets.remove(packet)
+			del packet		
+
+		self.packets = []
+			
 		
 	def pretty_print(self):
 		print("~~~ New Flow ~~~")
@@ -181,9 +191,11 @@ def main():
 		burst = Burst(ppackets[0])
 		
 		for ppacket in ppackets[1:]:
+#			print ppacket.timestamp
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				burst.pretty_print()
 				burst.clean_me()
+				del burst
 				burst = Burst(ppacket)
 			else:
 				burst.add_ppacket(ppacket)
