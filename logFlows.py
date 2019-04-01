@@ -67,14 +67,14 @@ class Flow():
 		
 	def pretty_print(self):
 		print("~~~ New Flow ~~~")
-		print("Source IP: ()".format(self.src_ip))
-		print("Source Port: ", self.src_port)
-		print("Destination IP: ", self.dst_ip)
-		print("Destination Port: ", self.dst_port)
-		print("Protocol: ", self.protocol)
-		print("Timestamp: ", self.timestamp)
-		print("Packets sent: ", self.num_packets_sent)
-		print("Bytes sent: ", self.num_bytes_sent)
+		print("Source IP: {}".format(self.src_ip))
+		print("Source Port: {}".format(self.src_port))
+		print("Destination IP: {}".format(self.dst_ip))
+		print("Destination Port: {}".format(self.dst_port))
+		print("Protocol: {}".format(self.protocol))
+		print("Timestamp: {}".format(self.timestamp))
+		print("Packets sent: {}".format(self.num_packets_sent))
+		print("Bytes sent: {}".format(self.num_bytes_sent))
 
 # packet structure
 class Packet():
