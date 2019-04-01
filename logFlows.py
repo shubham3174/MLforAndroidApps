@@ -5,6 +5,10 @@ import logging
 # for verification
 import os
 
+# for python memory problems
+import copy
+
+
 # for packet parsing
 import pyshark
 import datetime
@@ -34,8 +38,8 @@ class Burst():
 		for flow in self.flows:
 			flow.clean_me()
 			self.flows.remove(flow)
-			del flow
-
+		del flow.packets
+		print flow.packets
 		self.flows = []	
 
 	def pretty_print(self):
@@ -78,8 +82,7 @@ class Flow():
 
 	def clean_me(self):
 		for packet in self.packets:
-			self.packets.remove(packet)
-			del packet		
+			self.packets.remove(packet)		
 
 		self.packets = []
 			
@@ -195,7 +198,8 @@ def main():
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				burst.pretty_print()
 				burst.clean_me()
-				del burst
+				del burst.flows
+				burst = copy.deepcopy([])
 				burst = Burst(ppacket)
 			else:
 				burst.add_ppacket(ppacket)
