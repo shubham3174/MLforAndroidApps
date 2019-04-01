@@ -7,6 +7,7 @@ import os
 
 # for packet parsing
 import pyshark
+import datetime
 
 # burst structure
 class Burst():
@@ -83,7 +84,7 @@ class Packet():
 		self.dst_ip = dst_ip
 		self.dst_port = dst_port
 		self.protocol = protocol
-		self.timestamp = timestamp
+		self.timestamp = datetime.datetime.fromtimestamp(timestamp)
 
 	def pretty_print(self):
 		print("~~~ New Packet ~~~")
@@ -137,9 +138,6 @@ def main():
 		if not os.path.exists(args.file):
 			logging.error("input a valid file to be parsed")
 			exit()
-	
-		# list of flows to be maintained
-		flows = []
 
 		ppackets = parse_file(args.file)
 		
