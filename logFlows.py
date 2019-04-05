@@ -8,11 +8,14 @@ import os
 # for python memory problems
 import copy
 
+# for logging
+import csv
 
 # for packet parsing
 import pyshark
 import datetime
 import time
+
 
 # burst structure
 class Burst():
@@ -48,6 +51,10 @@ class Burst():
 		for flow in self.flows:
 			# flow.pretty_print()
 			flow.one_line_print()
+			
+	def write_to_csv(self, writer):
+		for flow in self.flows:
+			flow.write_to_csv(writer)
 
 class Flow():
 	timestamp = None
@@ -102,6 +109,14 @@ class Flow():
 #		for packet in self.packets:
 #			packet.one_line_print()
 		
+	def write_to_csv(self, writer):
+		# write the packets to the csv (just in case)
+		for packet in self.packets:
+			packet.write_to_csv(writer)
+			
+		# write the flow to the csv
+		writer.writerow(['flow', self.protocol])
+		
 # packet structure
 class Packet():
 	src_ip = None
@@ -133,6 +148,9 @@ class Packet():
 
 	def one_line_print(self):
 		print("\t{} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol))
+		
+	def write_to_csv(self, writer):
+		writer.writerow(['packet', self.protocol])
 	
 	
 # tries to make a Packet object from a packet
@@ -154,7 +172,7 @@ def parse_file(file):
 
 	return list_of_packets
 
-def parse_live():
+def parse_live(writer):
 	first_ppacket = True
 
 	live_cap = pyshark.LiveCapture(interface="eth1")
@@ -169,20 +187,30 @@ def parse_live():
 			else:
 				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 					burst.pretty_print()
+					burst.write_to_csv(writer)
 
 					burst.clean_me()
 					burst = Burst(ppacket)
 				else:
-					burst.add_ppacket(ppacket)
+					burst.w(ppacket)
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
 	parser.add_argument("-l", "--liveparse", action="store_true", help="live parse packets")
 	parser.add_argument("-f", "--file", help="the file to parse")
 	
 	args = parser.parse_args()
+	
+	csv_file = open("traffic.csv", "wb")
+	writer = csv.writer(csv_file, delimiter=' ')
+	
+	# rows in csv file are
+	#     type: 'packet' or 'flow'
+	#     protocol: 'udp', 'tcp', etc.
+	writer.writerow(["type", "protocol"])
+	
 
 	if args.liveparse:
-		parse_live()
+		parse_live(writer)
 	else:
 		if not os.path.exists(args.file):
 			logging.error("input a valid file to be parsed")
@@ -196,12 +224,15 @@ def main():
 #			print ppacket.timestamp
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				burst.pretty_print()
+				burst.write_to_csv(writer)
 				burst.clean_me()
 #				del burst.flows
 				burst = copy.deepcopy([])
 				burst = Burst(ppacket)
 			else:
 				burst.add_ppacket(ppacket)
+				
+		csv_file.close()
 
 if __name__ == "__main__":
 	main()
