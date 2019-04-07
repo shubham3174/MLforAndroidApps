@@ -16,7 +16,7 @@ import datetime
 import time
 
 # for machine learning
-
+from sklearn.svm import SVC
 
 def parse_file(file):
 	first = 1
