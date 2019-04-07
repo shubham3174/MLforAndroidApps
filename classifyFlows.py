@@ -20,6 +20,7 @@ import time
 
 # for machine learning
 from sklearn.svm import SVC
+import numpy as np
 
 def parse_file(file):
 	first = 1
