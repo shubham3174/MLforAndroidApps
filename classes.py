@@ -88,7 +88,7 @@ class Flow():
 		
 	def write_to_csv(self, writer):
 		# write the flow to the csv
-		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent])
+		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, "LABEL"])
 		
 # packet structure
 class Packet():
