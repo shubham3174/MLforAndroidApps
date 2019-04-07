@@ -45,6 +45,7 @@ class Flow():
 	num_bytes_sent = 0
 	packets = []
 	length = 0
+	integer_protocol = 0
 
 	def __init__(self, ppacket):
 		self.timestamp = ppacket.timestamp
@@ -55,6 +56,11 @@ class Flow():
 		self.protocol = ppacket.protocol
 		self.packets = []
 		self.add_ppacket(ppacket)
+		if self.protocol == 'UDP':
+			self.integer_protocol = 1
+		elif self.protocol == 'TCP':
+			self.integer_protocol = 2
+
 
 	def add_ppacket(self, ppacket):
 		self.packets.append(ppacket)
@@ -88,7 +94,7 @@ class Flow():
 		
 	def write_to_csv(self, writer):
 		# write the flow to the csv
-		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, "LABEL"])
+		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, "LABEL", self.integer_protocol])
 		
 # packet structure
 class Packet():
