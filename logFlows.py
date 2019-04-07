@@ -70,11 +70,7 @@ def main():
 	csv_file = open("traffic.csv", "wb")
 	writer = csv.writer(csv_file, delimiter=',')
 	
-	# rows in csv file are
-	#     type: 'packet' or 'flow'
-	#     protocol: 'udp', 'tcp', etc.
-	# writer.writerow(["type", "protocol", "label"])
-	
+	# look in classes.py for the rows in the CSV file	
 
 	if args.liveparse:
 		parse_live(writer)

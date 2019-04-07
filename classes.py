@@ -1,4 +1,19 @@
-
+# rows in csv file are
+# *** FEATURE FOR CLASSIFIER
+#     1: timestamp
+#     2: srcaddr
+#     3: dstaddr
+#     4: srcport
+#     5: dstport
+# *** 6: protocol: 'udp', 'tcp', etc. 
+#     7: #packets sent
+# *** 8: #bytes sent
+#     9: label
+# *** 10: type: 'packet' or 'flow'
+#     11: 
+#     
+	
+	
 # burst structure
 class Burst():
 	timestamp_lastrecvppacket = 0.0
