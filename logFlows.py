@@ -90,7 +90,7 @@ class Flow():
 			self.packets.remove(packet)		
 
 		self.packets = []
-#		print self.packets			
+#		print self.packets	
 		
 	def pretty_print(self):
 		print("~~~ New Flow ~~~")
@@ -192,7 +192,7 @@ def parse_live(writer):
 					burst.clean_me()
 					burst = Burst(ppacket)
 				else:
-					burst.w(ppacket)
+					burst.write_to_csv(ppacket)
 def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
 	parser.add_argument("-l", "--liveparse", action="store_true", help="live parse packets")
@@ -201,12 +201,12 @@ def main():
 	args = parser.parse_args()
 	
 	csv_file = open("traffic.csv", "wb")
-	writer = csv.writer(csv_file, delimiter=' ')
+	writer = csv.writer(csv_file, delimiter=',')
 	
 	# rows in csv file are
 	#     type: 'packet' or 'flow'
 	#     protocol: 'udp', 'tcp', etc.
-	writer.writerow(["type", "protocol"])
+	# writer.writerow(["type", "protocol", "label"])
 	
 
 	if args.liveparse:
