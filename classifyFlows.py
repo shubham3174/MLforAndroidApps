@@ -1,3 +1,6 @@
+# classes
+from classes.py import Burst, Flow, Packet
+
 # for usability
 import argparse
 import logging
