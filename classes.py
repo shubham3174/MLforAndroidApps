@@ -1,19 +1,3 @@
-# rows in csv file are
-# *** FEATURE FOR CLASSIFIER
-#     1: timestamp
-#     2: srcaddr
-#     3: dstaddr
-#     4: srcport
-#     5: dstport
-# *** 6: protocol: 'udp', 'tcp', etc. 
-#     7: #packets sent
-# *** 8: #bytes sent
-#     9: label
-# *** 10: type: 'packet' or 'flow'
-#     11: 
-#     
-	
-	
 # burst structure
 class Burst():
 	timestamp_lastrecvppacket = 0.0
@@ -39,14 +23,11 @@ class Burst():
 		for flow in self.flows:
 			flow.clean_me()
 			self.flows.remove(flow)
-#		del flow.packets
-#		print flow.packets
 		self.flows = []	
 
 	def pretty_print(self):
 		print("~~~ New Burst ~~~")
 		for flow in self.flows:
-			# flow.pretty_print()
 			flow.one_line_print()
 			
 	def write_to_csv(self, writer):
@@ -72,7 +53,6 @@ class Flow():
 		self.src_port = ppacket.src_port
 		self.dst_port = ppacket.dst_port
 		self.protocol = ppacket.protocol
-#		print 'test', self.packets
 		self.packets = []
 		self.add_ppacket(ppacket)
 
@@ -107,12 +87,8 @@ class Flow():
 #			packet.one_line_print()
 		
 	def write_to_csv(self, writer):
-		# write the packets to the csv (just in case)
-		for packet in self.packets:
-			packet.write_to_csv(writer)
-			
 		# write the flow to the csv
-		writer.writerow(['flow', self.protocol])
+		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent])
 		
 # packet structure
 class Packet():
@@ -145,6 +121,3 @@ class Packet():
 
 	def one_line_print(self):
 		print("\t{} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol))
-		
-	def write_to_csv(self, writer):
-		writer.writerow(['packet', self.protocol])

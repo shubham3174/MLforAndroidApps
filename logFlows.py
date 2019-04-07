@@ -70,7 +70,7 @@ def main():
 	csv_file = open("traffic.csv", "wb")
 	writer = csv.writer(csv_file, delimiter=',')
 	
-	# look in classes.py for the rows in the CSV file	
+	# see the google doc for the csv rows
 
 	if args.liveparse:
 		parse_live(writer)
