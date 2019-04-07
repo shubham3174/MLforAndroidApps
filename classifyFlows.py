@@ -33,8 +33,8 @@ def parse_file(file):
 				labels = np.array([row[2]])
 				first = 0
 			else:
-				features = np.vstack(features, [row[0], row[1]])
-				labels = np.vstack(labels, [row[2]])
+				features = np.vstack((features, [row[0], row[1]]))
+				labels = np.vstack((labels, [row[2]]))
 				
 	return features, labels
 	
