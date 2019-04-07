@@ -22,7 +22,7 @@ import time
 from sklearn.svm import SVC
 import numpy as np
 
-def parse_file(file):
+def export_data(file):
 	first = 1
 	
 	with open(file) as csv_file:
@@ -38,6 +38,24 @@ def parse_file(file):
 				
 	return features, labels
 	
+# *** COPIED FROM OTHER FILE tries to make a Packet object from a packet
+# if the packet is incomplete then it returns None
+def parse_packet(packet):
+	try:
+		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp, int(packet.length))
+		return ppacket
+	except AttributeError:
+		return None
+
+def parse_file(file):
+	list_of_packets = []
+	packets = pyshark.FileCapture(file)
+	for packet in packets:
+		ppacket = parse_packet(packet)
+		if ppacket is not None:
+			list_of_packets.append(ppacket)
+
+	return list_of_packets
 
 def train_model_SVM(train, train_labels, test, test_labels):
 	model = SVC(kernel='linear')
@@ -55,8 +73,26 @@ def main():
 	
 	args = parser.parse_args()
 
-	train_features, train_labels = parse_file(args.training)
-	test_features, test_labels = parse_file(args.testing)
+	train_features, train_labels = export_data(args.training)
+	ppackets = parse_file(args.testing)
+
+	burst = Burst(ppackets[0])
+
+	csv_file = open("giventraffic.csv", "wb")
+	writer = csv.writer(csv_file, delimiter=',')
+	for ppacket in ppackets[1:]:
+		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+			burst.pretty_print()
+			burst.write_to_csv(writer)
+			burst.clean_me()
+			burst = copy.deepcopy([])
+			burst = Burst(ppacket)
+		else:
+			burst.add_ppacket(ppacket)
+			
+	csv_file.close()
+	
+	test_features, test_labels = export_data("giventraffic.csv")
 	
 	# classify 
 	score = train_model_SVM(train_features, train_labels, test_features, test_labels)	
