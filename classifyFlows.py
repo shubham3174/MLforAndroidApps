@@ -135,8 +135,8 @@ def main():
 	# predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
 	
 	
-#	import pdb; pdb.set_trace()
-	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), np.array([train_features[0], train_features[4], train_features[9], train_features[34]], "float"), np.array([train_labels[0], train_labels[4], train_labels[9], train_labels[34]], "float"))	
+	#import pdb; pdb.set_trace()
+	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), train_features[1000:1020].astype("float"), train_labels[1000:1020].astype("float"))
 	
 
 if __name__ == "__main__":
