@@ -164,7 +164,7 @@ def main():
 	#import pdb; pdb.set_trace()
 	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), train_features[1000:1020].astype("float"), train_labels[1000:1020].astype("float"))
 	
-	print_results(ppackets, predicted)
+#	print_results(ppackets, predicted)
 	
 
 if __name__ == "__main__":
