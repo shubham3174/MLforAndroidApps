@@ -47,6 +47,11 @@ class Flow():
 	length = 0
 	integer_protocol = 0
 	label = None
+	ethtype = None 
+	ttl = None
+	flags = None 
+	proto = None
+	
 
 	def __init__(self, ppacket):
 		self.timestamp = ppacket.timestamp
@@ -62,12 +67,17 @@ class Flow():
 		elif self.protocol == 'TCP':
 			self.integer_protocol = 2
 		self.label = ppacket.label
+		self.ethtype = ppacket.ethtype 
+		self.ttl = ppacket.ttl 
+		self.flags = ppacket.flags 
+		self.proto = ppacket.proto
 
 
 	def add_ppacket(self, ppacket):
 		self.packets.append(ppacket)
 		self.num_packets_sent += 1
 		self.num_bytes_sent += ppacket.num_bytes
+		self.ttl = (self.ttl + ppacket.ttl) / 2
 
 	def clean_me(self):
 #		print self.packets
@@ -96,7 +106,7 @@ class Flow():
 		
 	def write_to_csv(self, writer):
 		# write the flow to the csv
-		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, self.label, self.integer_protocol])
+		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, self.label, self.integer_protocol, self.ethtype, self.ttl, self.flags, self.proto])
 		
 	def update_label(self, label):
 		self.label = label
@@ -112,10 +122,14 @@ class Packet():
 	dst_port = None
 	protocol = None
 	timestamp = None
-	num_bytes = 0
+	num_bytes = None
 	label = None
+	ethtype = None 
+	ttl = None
+	flags = None 
+	proto = None
 	
-	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp, num_bytes, appname):
+	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp, num_bytes, appname, ethtype, ttl, flags, proto):
 		#TODO: Make __init__ populate number of bytes
 		self.src_ip = src_ip
 		self.src_port = src_port
@@ -125,6 +139,10 @@ class Packet():
 		self.timestamp = float(timestamp)
 		self.num_bytes = num_bytes
 		self.label = appname
+		self.ethtype = ethtype 
+		self.ttl = ttl
+		self.flags = flags 
+		self.proto = proto
 
 	def pretty_print(self):
 		print("~~~ New Packet ~~~")
