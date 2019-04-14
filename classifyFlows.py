@@ -67,6 +67,29 @@ def train_model_SVM(train, train_labels, test, test_labels):
 	
 	return predicted, score
 				
+def train_model_clustering(train, train_labels, test, test_labels):
+	clus = cluster.KMeans(n_clusters=5, random_state=0)
+	fitted = clus.fit(train)
+	predicted = fitted.predict(test)
+	score = abs(fitted.score(test, predicted))
+
+	if debug:
+		print 'Predicted: ', type(predicted), predicted
+		print 'Mean Accuracy for ', num_clusters, ': ', score
+
+	return score
+	
+def train_model_regression(train, train_labels, test, test_labels):
+	regr = linear_model.LogisticRegression(multi_class='multinomial')
+	fitted = regr.fit(train, train_labels)
+	predicted = fitted.predict(test)
+	score = fitted.score(test, test_labels)
+
+	if debug:
+		print 'Predicted: ', type(predicted), predicted
+		print 'Mean Accuracy for ', solver, ': ', score
+
+	return score
 				
 def main():
 	parser = argparse.ArgumentParser(description="classify flows")
@@ -97,7 +120,7 @@ def main():
 	test_features, test_labels = export_data("giventraffic.csv")
 	
 	# classify 
-	predicted, score = train_model_SVM(train_features, train_labels, test_features, test_labels)	
+	predicted, score = train_model_regression(train_features, train_labels, test_features, test_labels)	
 	
 
 if __name__ == "__main__":
