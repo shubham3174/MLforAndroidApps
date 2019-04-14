@@ -46,6 +46,7 @@ class Flow():
 	packets = []
 	length = 0
 	integer_protocol = 0
+	label = None
 
 	def __init__(self, ppacket):
 		self.timestamp = ppacket.timestamp
@@ -60,6 +61,7 @@ class Flow():
 			self.integer_protocol = 1
 		elif self.protocol == 'TCP':
 			self.integer_protocol = 2
+		self.label = ppacket.label
 
 
 	def add_ppacket(self, ppacket):
@@ -88,7 +90,7 @@ class Flow():
 
 	def one_line_print(self):
 #		print self.packets
-		print("{} {} {} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent))
+		print("{} {} {} {} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, self.label))
 #		for packet in self.packets:
 #			packet.one_line_print()
 		

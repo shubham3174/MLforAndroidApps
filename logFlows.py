@@ -22,7 +22,7 @@ import time
 	
 # tries to make a Packet object from a packet
 # if the packet is incomplete then it returns None
-def parse_packet(packet):
+def parse_packet(packet, appname):
 	try:
 		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp, int(packet.length), appname)
 		return ppacket
@@ -102,6 +102,7 @@ def main():
 			for file in filelist:
 				ppackets = parse_file(os.path.join(dirname, file), dirname.replace("Samples/",""))
 			
+				print dirname.replace("Samples/", "")	
 				burst = Burst(ppackets[0])
 				
 				for ppacket in ppackets[1:]:
@@ -116,7 +117,7 @@ def main():
 					else:
 						burst.add_ppacket(ppacket)
 						
-				csv_file.close()
+		csv_file.close()
 					
 
 if __name__ == "__main__":
