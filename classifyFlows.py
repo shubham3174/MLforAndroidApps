@@ -93,18 +93,19 @@ def train_model_regression(train, train_labels, test, test_labels):
 	return predicted, score
 	
 def print_results(ppackets, predicted):
+	new_predicted = []
 	for n, i in enumerate(predicted):
 		if i== 1:
-			predicted[n] = "Wikipedia"
+			new_predicted.append("Wikipedia")
 		elif i==2:
-			predicted[n] = "Youtube"
+			new_predicted.append("Youtube")
 		elif i==3:
-			predicted[n] = "WeatherChannel"
+			new_predicted.append("WeatherChannel")
 		elif i==4:
-			predicted[n] = "GoogleNews"
+			new_predicted.append("GoogleNews")
 		elif i==5:
-			predicted[n] = "FruitNinja"
-	ppackets[0].label = predicted[0]
+			new_predicted.append("FruitNinja")
+	ppackets[0].label = new_predicted[0]
 	burst = Burst(ppackets[0])
 	i = 0
 	
@@ -115,7 +116,7 @@ def print_results(ppackets, predicted):
 			burst.clean_me()
 			burst = Burst(ppacket)
 		else:
-			ppacket.label = predicted[i]
+			ppacket.label = new_predicted[i]
 			burst.add_ppacket(ppacket)
 	
 def main():
