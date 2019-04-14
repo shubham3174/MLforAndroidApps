@@ -91,7 +91,13 @@ def train_model_regression(train, train_labels, test, test_labels):
 	print 'Mean Accuracy: ', score
 
 	return predicted, score
-				
+	
+def print_results(bursts, predicted):
+	for burst in bursts:
+		print "Burst:"
+		for flow in burst.flows:
+			flow.one_line_print()
+	
 def main():
 	parser = argparse.ArgumentParser(description="classify flows")
 	parser.add_argument("-t", "--training", help="the training data, CSV")
@@ -113,6 +119,7 @@ def main():
 			train_labels[n] = 5
 	ppackets = parse_file(args.testing, 0)
 
+	bursts = []
 	burst = Burst(ppackets[0])
 
 	csv_file = open("giventraffic.csv", "wb")
@@ -121,6 +128,7 @@ def main():
 		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 			burst.pretty_print()
 			burst.write_to_csv(writer)
+			bursts.add(burst)
 			burst.clean_me()
 			burst = copy.deepcopy([])
 			burst = Burst(ppacket)
@@ -135,8 +143,10 @@ def main():
 	# predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
 	
 	
-#	import pdb; pdb.set_trace()
-	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), np.array([train_features[0], train_features[4], train_features[9], train_features[34]], "float"), np.array([train_labels[0], train_labels[4], train_labels[9], train_labels[34]], "float"))	
+	#import pdb; pdb.set_trace()
+	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), train_features[1000:1020].astype("float"), train_labels[1000:1020].astype("float"))
+	
+	print_results(bursts, predicted)
 	
 
 if __name__ == "__main__":
