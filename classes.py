@@ -98,6 +98,12 @@ class Flow():
 		# write the flow to the csv
 		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, self.label, self.integer_protocol])
 		
+	def update_label(self, label):
+		self.label = label
+		
+		for packet in self.packets:
+			packet.label = label	 
+		
 # packet structure
 class Packet():
 	src_ip = None

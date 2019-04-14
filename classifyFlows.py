@@ -63,9 +63,9 @@ def train_model_SVM(train, train_labels, test, test_labels):
 	model = SVC(kernel='linear')
 	fitted = model.fit(train, train_labels)
 	predicted = fitted.predict(test)
-	score = fitted.score(test, test_labels)
+	score = fitted.score(test, predicted) #TODO CHANGE
 	
-	return score
+	return predicted, score
 				
 				
 def main():
@@ -76,7 +76,7 @@ def main():
 	args = parser.parse_args()
 
 	train_features, train_labels = export_data(args.training)
-	ppackets = parse_file(args.testing)
+	ppackets = parse_file(args.testing, "Unknown")
 
 	burst = Burst(ppackets[0])
 
@@ -97,8 +97,8 @@ def main():
 	test_features, test_labels = export_data("giventraffic.csv")
 	
 	# classify 
-	score = train_model_SVM(train_features, train_labels, test_features, test_labels)	
-
+	predicted, score = train_model_SVM(train_features, train_labels, test_features, test_labels)	
+	
 
 if __name__ == "__main__":
 	main()
