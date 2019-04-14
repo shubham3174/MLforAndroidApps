@@ -30,13 +30,14 @@ def export_data(file):
 		reader = csv.reader(csv_file, delimiter=',')
 		for row in reader:
 			if first: 
-				features = np.array([row[0], row[1]])
-				labels = np.array([row[2]])
+				features = np.array([row[9], row[7]])
+				labels = np.array([row[8]])
 				first = 0
 			else:
-				features = np.vstack((features, [row[0], row[1]]))
-				labels = np.vstack((labels, [row[2]]))
-				
+				features = np.vstack((features, [row[9], row[7]]))
+				labels = np.vstack((labels, [row[8]]))
+	print features
+	print labels			
 	return features, labels
 	
 # *** COPIED FROM OTHER FILE tries to make a Packet object from a packet
@@ -69,8 +70,8 @@ def train_model_SVM(train, train_labels, test, test_labels):
 				
 def main():
 	parser = argparse.ArgumentParser(description="classify flows")
-	parser.add_argument("-t", "--training", help="the training data")
-	parser.add_argument("-e", "--testing", help="the testing data")
+	parser.add_argument("-t", "--training", help="the training data, CSV")
+	parser.add_argument("-e", "--testing", help="the testing data, PCAP")
 	
 	args = parser.parse_args()
 
