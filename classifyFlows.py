@@ -22,6 +22,9 @@ import time
 # for machine learning
 from sklearn.svm import SVC
 import numpy as np
+from sklearn import linear_model
+from sklearn import cluster
+
 
 def export_data(file):
 	first = 1
@@ -73,23 +76,21 @@ def train_model_clustering(train, train_labels, test, test_labels):
 	predicted = fitted.predict(test)
 	score = abs(fitted.score(test, predicted))
 
-	if debug:
-		print 'Predicted: ', type(predicted), predicted
-		print 'Mean Accuracy for ', num_clusters, ': ', score
+	print 'Predicted: ', predicted
+	print 'Mean Accuracy: ', score
 
-	return score
+	return predicted, score
 	
 def train_model_regression(train, train_labels, test, test_labels):
-	regr = linear_model.LogisticRegression(multi_class='multinomial')
+	regr = linear_model.LogisticRegression()
 	fitted = regr.fit(train, train_labels)
 	predicted = fitted.predict(test)
 	score = fitted.score(test, test_labels)
 
-	if debug:
-		print 'Predicted: ', type(predicted), predicted
-		print 'Mean Accuracy for ', solver, ': ', score
+	print 'Predicted: ', predicted
+	print 'Mean Accuracy: ', score
 
-	return score
+	return predicted, score
 				
 def main():
 	parser = argparse.ArgumentParser(description="classify flows")
@@ -99,7 +100,18 @@ def main():
 	args = parser.parse_args()
 
 	train_features, train_labels = export_data(args.training)
-	ppackets = parse_file(args.testing, "Unknown")
+	for n, i in enumerate(train_labels):
+		if i=="Wikipedia":
+			train_labels[n] = 1
+		elif i=="Youtube":
+			train_labels[n] = 2
+		elif i=="WeatherChannel":
+			train_labels[n] = 3
+		elif i=="GoogleNews":
+			train_labels[n] = 4
+		elif i=="FruitNinja":
+			train_labels[n] = 5
+	ppackets = parse_file(args.testing, 0)
 
 	burst = Burst(ppackets[0])
 
@@ -120,7 +132,8 @@ def main():
 	test_features, test_labels = export_data("giventraffic.csv")
 	
 	# classify 
-	predicted, score = train_model_regression(train_features, train_labels, test_features, test_labels)	
+	#import pdb; pdb.set_trace()
+	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))	
 	
 
 if __name__ == "__main__":
