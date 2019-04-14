@@ -132,8 +132,11 @@ def main():
 	test_features, test_labels = export_data("giventraffic.csv")
 	
 	# classify 
-	#import pdb; pdb.set_trace()
-	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))	
+	# predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
+	
+	
+	import pdb; pdb.set_trace()
+	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), train_features.astype("float"), train_labels.astype("float"))	
 	
 
 if __name__ == "__main__":
