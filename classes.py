@@ -94,7 +94,7 @@ class Flow():
 		
 	def write_to_csv(self, writer):
 		# write the flow to the csv
-		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, "LABEL", self.integer_protocol])
+		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, self.label, self.integer_protocol])
 		
 # packet structure
 class Packet():
@@ -105,8 +105,9 @@ class Packet():
 	protocol = None
 	timestamp = None
 	num_bytes = 0
+	label = None
 	
-	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp, num_bytes):
+	def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, timestamp, num_bytes, appname):
 		#TODO: Make __init__ populate number of bytes
 		self.src_ip = src_ip
 		self.src_port = src_port
@@ -115,6 +116,7 @@ class Packet():
 		self.protocol = protocol
 		self.timestamp = float(timestamp)
 		self.num_bytes = num_bytes
+		self.label = appname
 
 	def pretty_print(self):
 		print("~~~ New Packet ~~~")
@@ -124,6 +126,7 @@ class Packet():
 		print("Destination Port: ", self.dst_port)
 		print("Protocol: ", self.protocol)
 		print("Timestamp: ", self.timestamp)
+		print("Label: ", self.label)
 
 	def one_line_print(self):
-		print("\t{} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol))
+		print("\t{} {} {} {} {} {} {}".format(self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.label))

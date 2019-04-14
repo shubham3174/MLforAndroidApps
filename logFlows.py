@@ -24,16 +24,16 @@ import time
 # if the packet is incomplete then it returns None
 def parse_packet(packet):
 	try:
-		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp, int(packet.length))
+		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp, int(packet.length), appname)
 		return ppacket
 	except AttributeError:
 		return None
 
-def parse_file(file):
+def parse_file(file, appname):
 	list_of_packets = []
 	packets = pyshark.FileCapture(file)
 	for packet in packets:
-		ppacket = parse_packet(packet)
+		ppacket = parse_packet(packet, appname)
 		if ppacket is not None:
 			list_of_packets.append(ppacket)
 
@@ -98,13 +98,25 @@ def main():
 				
 		csv_file.close()
 	else:
-		print "hello"
 		for dirname, subdirlist, filelist in os.walk(args.directory):
-			print filelist
-			for subdir in subdirlist:
-				for dirname, subdirlist, filelist in os.walk(subdir):
-					for file in filelist:
-						print file
+			for file in filelist:
+				ppackets = parse_file(os.path.join(dirname, file), dirname.replace("Samples/",""))
+			
+				burst = Burst(ppackets[0])
+				
+				for ppacket in ppackets[1:]:
+		#			print ppacket.timestamp
+					if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+						burst.pretty_print()
+						burst.write_to_csv(writer)
+						burst.clean_me()
+		#				del burst.flows
+						burst = copy.deepcopy([])
+						burst = Burst(ppacket)
+					else:
+						burst.add_ppacket(ppacket)
+						
+				csv_file.close()
 					
 
 if __name__ == "__main__":
