@@ -92,11 +92,32 @@ def train_model_regression(train, train_labels, test, test_labels):
 
 	return predicted, score
 	
-def print_results(bursts, predicted):
-	for burst in bursts:
-		print "Burst:"
-		for flow in burst.flows:
-			flow.one_line_print()
+def print_results(ppackets, predicted):
+	new_predicted = []
+	for n, i in enumerate(predicted):
+		if i== 1:
+			new_predicted.append("Wikipedia")
+		elif i==2:
+			new_predicted.append("Youtube")
+		elif i==3:
+			new_predicted.append("WeatherChannel")
+		elif i==4:
+			new_predicted.append("GoogleNews")
+		elif i==5:
+			new_predicted.append("FruitNinja")
+	ppackets[0].label = new_predicted[0]
+	burst = Burst(ppackets[0])
+	i = 0
+	
+	for ppacket in ppackets[1:]:
+		i += 1
+		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+			burst.pretty_print()
+			burst.clean_me()
+			burst = Burst(ppacket)
+		else:
+			ppacket.label = new_predicted[i]
+			burst.add_ppacket(ppacket)
 	
 def main():
 	parser = argparse.ArgumentParser(description="classify flows")
@@ -119,7 +140,6 @@ def main():
 			train_labels[n] = 5
 	ppackets = parse_file(args.testing, 0)
 
-	bursts = []
 	burst = Burst(ppackets[0])
 
 	csv_file = open("giventraffic.csv", "wb")
@@ -128,9 +148,7 @@ def main():
 		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 			burst.pretty_print()
 			burst.write_to_csv(writer)
-			bursts.add(burst)
 			burst.clean_me()
-			burst = copy.deepcopy([])
 			burst = Burst(ppacket)
 		else:
 			burst.add_ppacket(ppacket)
@@ -146,7 +164,7 @@ def main():
 	#import pdb; pdb.set_trace()
 	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), train_features[1000:1020].astype("float"), train_labels[1000:1020].astype("float"))
 	
-	print_results(bursts, predicted)
+	print_results(ppackets, predicted)
 	
 
 if __name__ == "__main__":
