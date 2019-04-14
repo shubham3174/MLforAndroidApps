@@ -42,18 +42,18 @@ def export_data(file):
 	
 # *** COPIED FROM OTHER FILE tries to make a Packet object from a packet
 # if the packet is incomplete then it returns None
-def parse_packet(packet):
+def parse_packet(packet, appname):
 	try:
-		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp, int(packet.length))
+		ppacket = Packet(packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, packet.transport_layer, packet.sniff_timestamp, int(packet.length), appname)
 		return ppacket
 	except AttributeError:
 		return None
 
-def parse_file(file):
+def parse_file(file, appname):
 	list_of_packets = []
 	packets = pyshark.FileCapture(file)
 	for packet in packets:
-		ppacket = parse_packet(packet)
+		ppacket = parse_packet(packet, appname)
 		if ppacket is not None:
 			list_of_packets.append(ppacket)
 
