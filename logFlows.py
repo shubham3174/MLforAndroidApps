@@ -64,6 +64,7 @@ def main():
 	parser = argparse.ArgumentParser(description="parse pcap files")
 	parser.add_argument("-l", "--liveparse", action="store_true", help="live parse packets")
 	parser.add_argument("-f", "--file", help="the file to parse")
+	parser.add_argument("-d", "--directory", help="the directory of files to parse")
 	
 	args = parser.parse_args()
 	
@@ -74,7 +75,7 @@ def main():
 
 	if args.liveparse:
 		parse_live(writer)
-	else:
+	elif args.file is not None:
 		if not os.path.exists(args.file):
 			logging.error("input a valid file to be parsed")
 			exit()
@@ -96,6 +97,15 @@ def main():
 				burst.add_ppacket(ppacket)
 				
 		csv_file.close()
+	else:
+		print "hello"
+		for dirname, subdirlist, filelist in os.walk(args.directory):
+			print filelist
+			for subdir in subdirlist:
+				for dirname, subdirlist, filelist in os.walk(subdir):
+					for file in filelist:
+						print file
+					
 
 if __name__ == "__main__":
 	main()

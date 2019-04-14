@@ -70,8 +70,8 @@ def train_model_SVM(train, train_labels, test, test_labels):
 				
 def main():
 	parser = argparse.ArgumentParser(description="classify flows")
-	parser.add_argument("-t", "--training", help="the training data")
-	parser.add_argument("-e", "--testing", help="the testing data")
+	parser.add_argument("-t", "--training", help="the training data, CSV")
+	parser.add_argument("-e", "--testing", help="the testing data, PCAP")
 	
 	args = parser.parse_args()
 
