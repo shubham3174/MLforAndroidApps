@@ -80,7 +80,7 @@ def main():
 			logging.error("input a valid file to be parsed")
 			exit()
 
-		ppackets = parse_file(args.file)
+		ppackets = parse_file(args.file, os.path.dirname(args.file).replace("Samples/", ""))
 		
 		burst = Burst(ppackets[0])
 		
