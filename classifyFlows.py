@@ -33,11 +33,11 @@ def export_data(file):
 		reader = csv.reader(csv_file, delimiter=',')
 		for row in reader:
 			if first: 
-				features = np.array([row[9], row[7], row[10], row[11], row[12], row[13]])
+				features = np.array([row[6], row[9], row[7]])
 				labels = np.array([row[8]])
 				first = 0
 			else:
-				features = np.vstack((features, [row[9], row[7], row[10], row[11], row[12], row[13]]))
+				features = np.vstack((features, [row[6], row[9], row[7]]))
 				labels = np.vstack((labels, [row[8]]))
 	print features
 	print labels			
@@ -74,7 +74,7 @@ def train_model_clustering(train, train_labels, test, test_labels):
 	clus = cluster.KMeans(n_clusters=5, random_state=0)
 	fitted = clus.fit(train)
 	predicted = fitted.predict(test)
-	score = abs(fitted.score(test, predicted))
+	score = fitted.score(test, predicted)
 
 	print 'Predicted: ', predicted
 	print 'Mean Accuracy: ', score
@@ -162,7 +162,7 @@ def main():
 	
 	
 	#import pdb; pdb.set_trace()
-	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), train_features[1000:1020].astype("float"), train_labels[1000:1020].astype("float"))
+	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), train_features.astype("float"), train_labels.astype("float"))
 	
 #	print_results(ppackets, predicted)
 	

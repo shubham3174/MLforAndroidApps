@@ -77,7 +77,7 @@ class Flow():
 		self.packets.append(ppacket)
 		self.num_packets_sent += 1
 		self.num_bytes_sent += ppacket.num_bytes
-		self.ttl = (self.ttl + ppacket.ttl) / 2
+#		self.ttl = (self.ttl + ppacket.ttl) / 2
 
 	def clean_me(self):
 #		print self.packets
