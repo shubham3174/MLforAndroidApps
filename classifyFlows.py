@@ -24,7 +24,8 @@ from sklearn.svm import SVC
 import numpy as np
 from sklearn import linear_model
 from sklearn import cluster
-
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 def export_data(file):
 	first = 1
@@ -69,10 +70,21 @@ def train_model_SVM(train, train_labels, test, test_labels):
 	score = fitted.score(test, predicted) #TODO CHANGE
 	
 	return predicted, score
+
+def train_model_rf(train, train_labels, test, test_labels):
+	model = RandomForestClassifier(n_estimators=10, min_samples_leaf=30)
+	fitted = model.fit(train, train_labels)
+	predicted = fitted.predict(test)
+	score = fitted.score(test, test_labels)
+	
+	print 'Predicted: ', predicted
+	print 'Mean Accuracy: ', score
+
+	return predicted, score
 				
-def train_model_clustering(train, train_labels, test, test_labels):
-	clus = cluster.KMeans(n_clusters=5, random_state=0)
-	fitted = clus.fit(train)
+def train_model_tree(train, train_labels, test, test_labels):
+	model = DecisionTreeClassifier()
+	fitted = model.fit(train, train_labels)
 	predicted = fitted.predict(test)
 	score = fitted.score(test, predicted)
 
@@ -105,19 +117,20 @@ def print_results(ppackets, predicted):
 			new_predicted.append("GoogleNews")
 		elif i==5:
 			new_predicted.append("FruitNinja")
-	ppackets[0].label = new_predicted[0]
 	burst = Burst(ppackets[0])
 	i = 0
 	
 	for ppacket in ppackets[1:]:
-		i += 1
 		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+			for flow in burst.flows:
+				flow.label = new_predicted[i]
+				i += 1
 			burst.pretty_print()
 			burst.clean_me()
 			burst = Burst(ppacket)
 		else:
-			ppacket.label = new_predicted[i]
 			burst.add_ppacket(ppacket)
+
 	
 def main():
 	parser = argparse.ArgumentParser(description="classify flows")
@@ -156,15 +169,15 @@ def main():
 	csv_file.close()
 	
 	test_features, test_labels = export_data("giventraffic.csv")
-	
+
 	# classify 
 	# predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
 	
 	
 	#import pdb; pdb.set_trace()
-	predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), train_features.astype("float"), train_labels.astype("float"))
-	
-#	print_results(ppackets, predicted)
+	predicted, score = train_model_tree(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
+
+	print_results(ppackets, predicted)
 	
 
 if __name__ == "__main__":
