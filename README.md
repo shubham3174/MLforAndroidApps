@@ -8,6 +8,7 @@ The apps are: FruitNinja, GoogleNews, Wikipedia, WeatherChannel, and Youtube. Sa
 
 ## Dependencies
 scikit-learn==latest
+
 pyshark==0.3.8
 
 ## Usage
