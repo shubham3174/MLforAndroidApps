@@ -191,7 +191,7 @@ def main():
 	
 	
 	#import pdb; pdb.set_trace()
-	predicted, score = train_model_rf(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
+	predicted, score = train_model_tree(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
 
 	print_results(ppackets, predicted)
 	
