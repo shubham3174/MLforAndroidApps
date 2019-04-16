@@ -40,8 +40,8 @@ def export_data(file):
 			else:
 				features = np.vstack((features, [row[6], row[9], row[7]]))
 				labels = np.vstack((labels, [row[8]]))
-	print features
-	print labels			
+	#print features
+	#print labels			
 	return features, labels
 	
 # *** COPIED FROM OTHER FILE tries to make a Packet object from a packet
@@ -151,7 +151,23 @@ def main():
 			train_labels[n] = 4
 		elif i=="FruitNinja":
 			train_labels[n] = 5
-	ppackets = parse_file(args.testing, 0)
+	gen = 0
+	if os.path.dirname(args.testing).replace("Samples/", "").replace("/", "") in ["Wikipedia", "Youtube", "WeatherChannel", "GoogleNews", "FruitNinja"]:
+		gen_label = os.path.dirname(args.testing).replace("/", "").replace("Samples","")
+		if gen_label=="Wikipedia":
+			gen = 1
+		elif gen_label == "Youtube":
+			gen = 2
+		elif gen_label == "WeatherChannel":
+			gen = 3
+		elif gen_label == "GoogleNews":
+			gen = 4
+		elif gen_label == "FruitNinja":
+			gen = 5
+		else:
+			gen = 0
+
+	ppackets = parse_file(args.testing, gen)
 
 	burst = Burst(ppackets[0])
 
@@ -159,7 +175,7 @@ def main():
 	writer = csv.writer(csv_file, delimiter=',')
 	for ppacket in ppackets[1:]:
 		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
-			burst.pretty_print()
+			#burst.pretty_print()
 			burst.write_to_csv(writer)
 			burst.clean_me()
 			burst = Burst(ppacket)
@@ -175,7 +191,7 @@ def main():
 	
 	
 	#import pdb; pdb.set_trace()
-	predicted, score = train_model_tree(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
+	predicted, score = train_model_rf(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
 
 	print_results(ppackets, predicted)
 	
