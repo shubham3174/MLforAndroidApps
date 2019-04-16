@@ -67,7 +67,7 @@ def train_model_SVM(train, train_labels, test, test_labels):
 	model = SVC(kernel='linear')
 	fitted = model.fit(train, train_labels)
 	predicted = fitted.predict(test)
-	score = fitted.score(test, predicted) #TODO CHANGE
+	score = fitted.score(test, test_labels) #TODO CHANGE
 	
 	return predicted, score
 
@@ -86,7 +86,7 @@ def train_model_tree(train, train_labels, test, test_labels):
 	model = DecisionTreeClassifier()
 	fitted = model.fit(train, train_labels)
 	predicted = fitted.predict(test)
-	score = fitted.score(test, predicted)
+	score = fitted.score(test, test_labels)
 
 	print 'Predicted: ', predicted
 	print 'Mean Accuracy: ', score
