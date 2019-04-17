@@ -2,11 +2,13 @@
 class Burst():
 	timestamp_lastrecvppacket = 0.0
 	flows = []
+	ppackets = []
 
 	def __init__(self, firstppacket):
 		self.add_ppacket(firstppacket)
 		self.timestamp_lastrecvppacket = firstppacket.timestamp
 		self.flows = []	
+		self.ppackets = []
 	
 	def add_ppacket(self, ppacket):
 		self.timestamp_lastrecvppacket = ppacket.timestamp
@@ -16,6 +18,7 @@ class Burst():
 				return
 		newFlow = Flow(ppacket)
 		self.flows.append(newFlow)
+		self.ppackets.append(ppacket)
 
 
 	def clean_me(self):

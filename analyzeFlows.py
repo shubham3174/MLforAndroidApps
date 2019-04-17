@@ -52,57 +52,20 @@ def parse_packet(packet, appname):
 		return ppacket
 	except AttributeError:
 		return None
-
-def parse_file(file, appname):
-	list_of_packets = []
-	packets = pyshark.FileCapture(file)
-	for packet in packets:
-		ppacket = parse_packet(packet, appname)
-		if ppacket is not None:
-			list_of_packets.append(ppacket)
-
-	return list_of_packets
-
-def train_model_SVM(train, train_labels, test, test_labels):
-	model = SVC(kernel='linear')
-	fitted = model.fit(train, train_labels)
-	predicted = fitted.predict(test)
-	score = fitted.score(test, test_labels) #TODO CHANGE
-	
-	return predicted, score
-
-def train_model_rf(train, train_labels, test, test_labels):
-	model = RandomForestClassifier(n_estimators=10, min_samples_leaf=30)
-	fitted = model.fit(train, train_labels)
-	predicted = fitted.predict(test)
-	score = fitted.score(test, test_labels)
-	
-	print 'Predicted: ', predicted
-	print 'Mean Accuracy: ', score
-
-	return predicted, score
 				
-def train_model_tree(train, train_labels, test, test_labels):
+def train_model_tree(train, train_labels):
 	model = DecisionTreeClassifier()
 	fitted = model.fit(train, train_labels)
-	predicted = fitted.predict(test)
-	score = fitted.score(test, test_labels)
-
-	print 'Predicted: ', predicted
-	print 'Mean Accuracy: ', score
-
-	return predicted, score
+	return fitted 
 	
-def train_model_regression(train, train_labels, test, test_labels):
-	regr = linear_model.LogisticRegression()
-	fitted = regr.fit(train, train_labels)
-	predicted = fitted.predict(test)
-	score = fitted.score(test, test_labels)
+def predict(model, test, test_labels):
+	predicted = model.predict(test)
+	score = model.score(test, test_labels)
 
 	print 'Predicted: ', predicted
 	print 'Mean Accuracy: ', score
 
-	return predicted, score
+	return predicted
 	
 def print_results(ppackets, predicted):
 	new_predicted = []
@@ -130,7 +93,51 @@ def print_results(ppackets, predicted):
 			burst = Burst(ppacket)
 		else:
 			burst.add_ppacket(ppacket)
+	
 
+def parse_file(file, appname):
+	list_of_packets = []
+	packets = pyshark.FileCapture(file)
+	for packet in packets:
+		ppacket = parse_packet(packet, appname)
+		if ppacket is not None:
+			list_of_packets.append(ppacket)
+
+	return list_of_packets
+	
+def parse_live(model):
+	first_ppacket = True
+	
+	csv_file = open("giventraffic.csv", "wb")
+	writer = csv.writer(csv_file, delimiter=',')
+
+	live_cap = pyshark.LiveCapture(interface="eth1")
+	iterate = live_cap.sniff_continuously
+	
+	for packet in iterate():
+		ppacket = parse_packet(packet)
+		if ppacket is not None:
+			if first_ppacket == True:
+				burst = Burst(ppacket)
+				first_ppacket = False
+			else:
+				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+					burst.pretty_print()
+					burst.write_to_csv(writer)
+					
+					csv_file.close()
+					test_features, test_labels = export_data("giventraffic.csv")
+					predicted = predict(model, test_features, test_labels)
+					print_results(burst.ppackets, predicted)
+					
+					csv_file = open("giventraffic.csv", "wb")
+					writer = csv.writer(csv_file, delimiter=',')
+					
+					burst.clean_me()
+					burst = Burst(ppacket)
+				else:
+					burst.write_to_csv(ppacket)
+					
 	
 def main():
 	parser = argparse.ArgumentParser(description="classify flows")
@@ -158,47 +165,44 @@ def main():
 
 		gen = 0
 		if os.path.dirname(args.testing).replace("Samples/", "").replace("/", "") in ["Wikipedia", "Youtube", "WeatherChannel", "GoogleNews", "FruitNinja"]:
-		gen_label = os.path.dirname(args.testing).replace("/", "").replace("Samples","")
-		if gen_label=="Wikipedia":
-			gen = 1
-		elif gen_label == "Youtube":
-			gen = 2
-		elif gen_label == "WeatherChannel":
-			gen = 3
-		elif gen_label == "GoogleNews":
-			gen = 4
-		elif gen_label == "FruitNinja":
-			gen = 5
-		else:
-			gen = 0
+			gen_label = os.path.dirname(args.testing).replace("/", "").replace("Samples","")
+			if gen_label=="Wikipedia":
+				gen = 1
+			elif gen_label == "Youtube":
+				gen = 2
+			elif gen_label == "WeatherChannel":
+				gen = 3
+			elif gen_label == "GoogleNews":
+				gen = 4
+			elif gen_label == "FruitNinja":
+				gen = 5
+			else:
+				gen = 0
 
-	ppackets = parse_file(args.testing, gen)
+		ppackets = parse_file(args.testing, gen)
 
-	burst = Burst(ppackets[0])
+		burst = Burst(ppackets[0])
 
-	csv_file = open("giventraffic.csv", "wb")
-	writer = csv.writer(csv_file, delimiter=',')
-	for ppacket in ppackets[1:]:
-		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
-			#burst.pretty_print()
-			burst.write_to_csv(writer)
-			burst.clean_me()
-			burst = Burst(ppacket)
-		else:
-			burst.add_ppacket(ppacket)
-			
-	csv_file.close()
+		csv_file = open("giventraffic.csv", "wb")
+		writer = csv.writer(csv_file, delimiter=',')
+		
+		for ppacket in ppackets[1:]:
+			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+				#burst.pretty_print()
+				burst.write_to_csv(writer)
+				burst.clean_me()
+				burst = Burst(ppacket)
+			else:
+				burst.add_ppacket(ppacket)
+				
+		csv_file.close()
 	
-	test_features, test_labels = export_data("giventraffic.csv")
+		test_features, test_labels = export_data("giventraffic.csv")
 
-	# classify 
-	# predicted, score = train_model_regression(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
-	
-	
-	#import pdb; pdb.set_trace()
-	predicted, score = train_model_tree(train_features.astype("float"), train_labels.astype("float"), test_features.astype("float"), test_labels.astype("float"))
+		model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
+		predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
 
-	print_results(ppackets, predicted)
+		print_results(ppackets, predicted)
 	
 
 if __name__ == "__main__":
