@@ -59,15 +59,19 @@ def train_model_tree(train, train_labels):
 	return fitted 
 	
 def predict(model, test, test_labels):
+	# print 'predicting'
+	# print test
+	#import pdb; pdb.set_trace()
 	predicted = model.predict(test)
 	score = model.score(test, test_labels)
 
-	print 'Predicted: ', predicted
-	print 'Mean Accuracy: ', score
+	# print 'Predicted: ', predicted
+	# print 'Mean Accuracy: ', score
 
 	return predicted
 	
 def print_results(ppackets, predicted):
+	# print 'printing results'
 	new_predicted = []
 	for n, i in enumerate(predicted):
 		if i== 1:
@@ -120,9 +124,10 @@ def parse_live(model):
 			else:
 				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 					test_features, test_labels = burst.get_data()
-					
-					predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
-					print_results(burst.ppackets, predicted)
+					if test_features is not None:					
+
+						predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
+						print_results(burst.ppackets, predicted)
 
 					burst.clean_me()
 					burst = Burst(ppacket)
@@ -179,8 +184,10 @@ def main():
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				test_features, test_labels = burst.get_data()
 				
-				predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
-				print_results(burst.ppackets, predicted)
+				#import pdb; pdb.set_trace()
+				if test_features is not None:				
+					predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
+					print_results(burst.ppackets, predicted)
 				
 				burst.clean_me()
 				burst = Burst(ppacket)
