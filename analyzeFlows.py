@@ -57,7 +57,37 @@ def parse_file(file, appname):
 			list_of_packets.append(ppacket)
 
 	return list_of_packets
-				
+
+def parse_live(model):
+	first_ppacket = True
+
+	live_cap = pyshark.LiveCapture(interface="eth1")
+	iterate = live_cap.sniff_continuously
+		
+	for packet in iterate():
+		ppacket = parse_packet(packet)
+		if ppacket is not None:
+			if first_ppacket == True:
+				burst = Burst(ppacket)
+				test_features_non = np.array([]).reshape(0,3)
+				test_labels_non = np.array([]).reshape(0,1)	
+				first_ppacket = False
+			else:
+				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+					t_non, tl_non = burst.get_data()
+					test_features_non = np.vstack([test_features_non, t_non])
+					test_labels_non = np.vstack([test_labels_non, tl_non])
+					
+					predicted_non, score_non = predict(model, test_features_non.astype("float"), test_labels_non.astype("float"))
+					print_results(burst.ppackets, predicted_non)
+
+					
+					burst.clean_me()
+					burst = Burst(ppacket)
+				else:
+					burst.add_ppacket(ppacket)
+
+	
 def train_model_tree(train, train_labels):
 	model = DecisionTreeClassifier()
 	fitted = model.fit(train, train_labels)
@@ -104,6 +134,7 @@ def main():
 	parser = argparse.ArgumentParser(description="classify flows")
 	parser.add_argument("-t", "--training", help="the training data, CSV")
 	parser.add_argument("-e", "--testing", help="the testing data, PCAP")
+	parser.add_argument("-l", "--live", action="store_true", default=False, help="flag to do live capturing and classification")
 	
 	args = parser.parse_args()
 
@@ -120,44 +151,48 @@ def main():
 		elif i=="FruitNinja":
 			train_labels[n] = 5
 	gen = 0
-	if os.path.dirname(args.testing).replace("Samples/", "").replace("/", "") in ["Wikipedia", "Youtube", "WeatherChannel", "GoogleNews", "FruitNinja"]:
-		gen_label = os.path.dirname(args.testing).replace("/", "").replace("Samples","")
-		if gen_label=="Wikipedia":
-			gen = 1
-		elif gen_label == "Youtube":
-			gen = 2
-		elif gen_label == "WeatherChannel":
-			gen = 3
-		elif gen_label == "GoogleNews":
-			gen = 4
-		elif gen_label == "FruitNinja":
-			gen = 5
-		else:
-			gen = 0
-
-	ppackets = parse_file(args.testing, gen)
-
-	burst = Burst(ppackets[0])
-
-	test_features_non = np.array([]).reshape(0,3)
-	test_labels_non = np.array([]).reshape(0,1)	
-
-	for ppacket in ppackets[1:]:
-		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
-			t_non, tl_non = burst.get_data()
-			test_features_non = np.vstack([test_features_non, t_non])
-			test_labels_non = np.vstack([test_labels_non, tl_non])
-			burst.clean_me()
-			burst = Burst(ppacket)
-		else:
-			burst.add_ppacket(ppacket)
-			
 	
-	model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
-	predicted_non, score_non = predict(model, test_features_non.astype("float"), test_labels_non.astype("float"))
+	if not args.live:
+		if os.path.dirname(args.testing).replace("Samples/", "").replace("/", "") in ["Wikipedia", "Youtube", "WeatherChannel", "GoogleNews", "FruitNinja"]:
+			gen_label = os.path.dirname(args.testing).replace("/", "").replace("Samples","")
+			if gen_label=="Wikipedia":
+				gen = 1
+			elif gen_label == "Youtube":
+				gen = 2
+			elif gen_label == "WeatherChannel":
+				gen = 3
+			elif gen_label == "GoogleNews":
+				gen = 4
+			elif gen_label == "FruitNinja":
+				gen = 5
+			else:
+				gen = 0
 
-	print_results(ppackets, predicted_non)
-	
+		ppackets = parse_file(args.testing, gen)
+
+		burst = Burst(ppackets[0])
+
+		test_features_non = np.array([]).reshape(0,3)
+		test_labels_non = np.array([]).reshape(0,1)	
+
+		for ppacket in ppackets[1:]:
+			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+				t_non, tl_non = burst.get_data()
+				test_features_non = np.vstack([test_features_non, t_non])
+				test_labels_non = np.vstack([test_labels_non, tl_non])
+				burst.clean_me()
+				burst = Burst(ppacket)
+			else:
+				burst.add_ppacket(ppacket)
+				
+		
+		model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
+		predicted_non, score_non = predict(model, test_features_non.astype("float"), test_labels_non.astype("float"))
+
+		print_results(ppackets, predicted_non)
+	else:
+		model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
+		parse_live(model)
 
 if __name__ == "__main__":
 	main()
