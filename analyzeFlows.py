@@ -115,7 +115,7 @@ def parse_live(model):
 	iterate = live_cap.sniff_continuously
 	
 	for packet in iterate():
-		ppacket = parse_packet(packet)
+		ppacket = parse_packet(packet, "NoIdea")
 		if ppacket is not None:
 			if first_ppacket == True:
 				burst = Burst(ppacket)
@@ -160,7 +160,8 @@ def main():
 		elif i=="FruitNinja":
 			train_labels[n] = 5
 	if args.live:
-		parse_live()
+		model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
+		parse_live(model)
 	else:  
 
 		gen = 0
