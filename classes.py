@@ -40,6 +40,8 @@ class Burst():
 			flow.write_to_csv(writer)
 			
 	def get_data(self):
+		if len(self.flows) == 0:
+			return None, None
 		features = self.flows[0].add_first_feature_row()
 		labels = self.flows[0].add_first_label_row()
 		for flow in self.flows[1:]:

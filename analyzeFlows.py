@@ -75,8 +75,9 @@ def parse_live(model):
 			else:
 				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 					t_non, tl_non = burst.get_data()
-					test_features_non = np.vstack([test_features_non, t_non])
-					test_labels_non = np.vstack([test_labels_non, tl_non])
+					if t_non is not None:
+						test_features_non = np.vstack([test_features_non, t_non])
+						test_labels_non = np.vstack([test_labels_non, tl_non])
 					
 					predicted_non, score_non = predict(model, test_features_non.astype("float"), test_labels_non.astype("float"))
 					print_results(burst.ppackets, predicted_non)
@@ -178,8 +179,9 @@ def main():
 		for ppacket in ppackets[1:]:
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 				t_non, tl_non = burst.get_data()
-				test_features_non = np.vstack([test_features_non, t_non])
-				test_labels_non = np.vstack([test_labels_non, tl_non])
+				if t_non is not None:
+					test_features_non = np.vstack([test_features_non, t_non])
+					test_labels_non = np.vstack([test_labels_non, tl_non])
 				burst.clean_me()
 				burst = Burst(ppacket)
 			else:
