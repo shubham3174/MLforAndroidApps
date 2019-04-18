@@ -58,9 +58,12 @@ def parse_file(file, appname):
 
 	return list_of_packets
 				
-def train_model_tree(train, train_labels, test, test_labels):
+def train_model_tree(train, train_labels):
 	model = DecisionTreeClassifier()
 	fitted = model.fit(train, train_labels)
+	return model
+
+def predict(fitted, test, test_labels):
 	predicted = fitted.predict(test)
 	score = fitted.score(test, test_labels)
 
@@ -139,13 +142,15 @@ def main():
 	csv_file = open("giventraffic.csv", "wb")
 	writer = csv.writer(csv_file, delimiter=',')
 	
-	first = 1
-	
+	test_features_non = np.array([]).reshape(0,3)
+	test_labels_non = np.array([]).reshape(0,1)	
+
 	for ppacket in ppackets[1:]:
 		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 			burst.write_to_csv(writer)
-			test_features_non, test_labels_non = burst.get_data(first)
-			first = 0
+			t_non, tl_non = burst.get_data()
+			test_features_non = np.vstack([test_features_non, t_non])
+			test_labels_non = np.vstack([test_labels_non, tl_non])
 			burst.clean_me()
 			burst = Burst(ppacket)
 		else:
@@ -158,9 +163,11 @@ def main():
 	
 	model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
 	predicted, score = predict(model, test_features.astype("float"), test_labels.astype("float"))
-	predicted_non, score_non = predict(model, test_features_non.astype("float"), test_labels_non.astype("float"))
+#	predicted_non, score_non = predict(model, test_features_non.astype("float"), test_labels_non.astype("float"))
 
 	print_results(ppackets, predicted)
+#	print 'next'
+#	print_results(ppackets, predicted_non)
 	
 
 if __name__ == "__main__":

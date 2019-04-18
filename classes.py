@@ -51,6 +51,7 @@ class Burst():
 			# print 'returning bad one'
 			return features.reshape(1,-1), labels.reshape(1,-1)
 
+#		print features,labels
 		return features, labels
 			
 			
@@ -137,7 +138,7 @@ class Flow():
 		return np.array([self.label])
 		
 	def add_feature_row(self, features):
-		return np.vstack((features, [self.num_packets_sent, self.num_bytes_sent, self.integer_protocol]))
+		return np.vstack((features, [self.num_packets_sent, self.integer_protocol, self.num_bytes_sent]))
 		
 	def add_label_row(self, labels):
 		return np.vstack((labels, [self.label]))

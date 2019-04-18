@@ -20,11 +20,7 @@ import datetime
 import time
 
 # for machine learning
-from sklearn.svm import SVC
 import numpy as np
-from sklearn import linear_model
-from sklearn import cluster
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 def export_data(file):
@@ -39,10 +35,9 @@ def export_data(file):
 				first = 0
 			else:
 				features = np.vstack((features, [row[6], row[9], row[7]]))
-				labels = np.vstack((labels, [row[8]]))
-	#print features
-	#print labels			
+				labels = np.vstack((labels, [row[8]]))		
 	return features, labels
+
 	
 # *** COPIED FROM OTHER FILE tries to make a Packet object from a packet
 # if the packet is incomplete then it returns None
@@ -52,26 +47,32 @@ def parse_packet(packet, appname):
 		return ppacket
 	except AttributeError:
 		return None
+
+def parse_file(file, appname):
+	list_of_packets = []
+	packets = pyshark.FileCapture(file)
+	for packet in packets:
+		ppacket = parse_packet(packet, appname)
+		if ppacket is not None:
+			list_of_packets.append(ppacket)
+
+	return list_of_packets
 				
 def train_model_tree(train, train_labels):
 	model = DecisionTreeClassifier()
 	fitted = model.fit(train, train_labels)
-	return fitted 
-	
-def predict(model, test, test_labels):
-	# print 'predicting'
-	# print test
-	#import pdb; pdb.set_trace()
-	predicted = model.predict(test)
-	score = model.score(test, test_labels)
+	return model
 
-	# print 'Predicted: ', predicted
-	# print 'Mean Accuracy: ', score
+def predict(fitted, test, test_labels):
+	predicted = fitted.predict(test)
+	score = fitted.score(test, test_labels)
 
-	return predicted
+	print 'Predicted: ', predicted
+	print 'Mean Accuracy: ', score
+
+	return predicted, score
 	
 def print_results(ppackets, predicted):
-	# print 'printing results'
 	new_predicted = []
 	for n, i in enumerate(predicted):
 		if i== 1:
@@ -97,49 +98,12 @@ def print_results(ppackets, predicted):
 			burst = Burst(ppacket)
 		else:
 			burst.add_ppacket(ppacket)
-	
 
-def parse_file(file, appname):
-	list_of_packets = []
-	packets = pyshark.FileCapture(file)
-	for packet in packets:
-		ppacket = parse_packet(packet, appname)
-		if ppacket is not None:
-			list_of_packets.append(ppacket)
-
-	return list_of_packets
-	
-def parse_live(model):
-	first_ppacket = True
-
-	live_cap = pyshark.LiveCapture(interface="eth1")
-	iterate = live_cap.sniff_continuously
-	
-	for packet in iterate():
-		ppacket = parse_packet(packet)
-		if ppacket is not None:
-			if first_ppacket == True:
-				burst = Burst(ppacket)
-				first_ppacket = False
-			else:
-				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
-					test_features, test_labels = burst.get_data()
-					if test_features is not None:					
-
-						predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
-						print_results(burst.ppackets, predicted)
-
-					burst.clean_me()
-					burst = Burst(ppacket)
-				else:
-					burst.write_to_csv(ppacket)
-					
 	
 def main():
 	parser = argparse.ArgumentParser(description="classify flows")
 	parser.add_argument("-t", "--training", help="the training data, CSV")
 	parser.add_argument("-e", "--testing", help="the testing data, PCAP")
-	parser.add_argument("-l", "--live", action="store_true", help="Live parse data as testing data")
 	
 	args = parser.parse_args()
 
@@ -155,45 +119,44 @@ def main():
 			train_labels[n] = 4
 		elif i=="FruitNinja":
 			train_labels[n] = 5
-	if args.live:
-		model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
-		parse_live(model)
-	else:  
+	gen = 0
+	if os.path.dirname(args.testing).replace("Samples/", "").replace("/", "") in ["Wikipedia", "Youtube", "WeatherChannel", "GoogleNews", "FruitNinja"]:
+		gen_label = os.path.dirname(args.testing).replace("/", "").replace("Samples","")
+		if gen_label=="Wikipedia":
+			gen = 1
+		elif gen_label == "Youtube":
+			gen = 2
+		elif gen_label == "WeatherChannel":
+			gen = 3
+		elif gen_label == "GoogleNews":
+			gen = 4
+		elif gen_label == "FruitNinja":
+			gen = 5
+		else:
+			gen = 0
 
-		gen = 0
-		if os.path.dirname(args.testing).replace("Samples/", "").replace("/", "") in ["Wikipedia", "Youtube", "WeatherChannel", "GoogleNews", "FruitNinja"]:
-			gen_label = os.path.dirname(args.testing).replace("/", "").replace("Samples","")
-			if gen_label=="Wikipedia":
-				gen = 1
-			elif gen_label == "Youtube":
-				gen = 2
-			elif gen_label == "WeatherChannel":
-				gen = 3
-			elif gen_label == "GoogleNews":
-				gen = 4
-			elif gen_label == "FruitNinja":
-				gen = 5
-			else:
-				gen = 0
+	ppackets = parse_file(args.testing, gen)
 
-		model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
-		
-		ppackets = parse_file(args.testing, gen)
-		burst = Burst(ppackets[0])
-		for ppacket in ppackets[1:]:
-			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
-				test_features, test_labels = burst.get_data()
-				
-				#import pdb; pdb.set_trace()
-				if test_features is not None:				
-					predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
-					print_results(burst.ppackets, predicted)
-				
-				burst.clean_me()
-				burst = Burst(ppacket)
-			else:
-				burst.add_ppacket(ppacket)
+	burst = Burst(ppackets[0])
+
+	test_features_non = np.array([]).reshape(0,3)
+	test_labels_non = np.array([]).reshape(0,1)	
+
+	for ppacket in ppackets[1:]:
+		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+			t_non, tl_non = burst.get_data()
+			test_features_non = np.vstack([test_features_non, t_non])
+			test_labels_non = np.vstack([test_labels_non, tl_non])
+			burst.clean_me()
+			burst = Burst(ppacket)
+		else:
+			burst.add_ppacket(ppacket)
 			
+	
+	model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
+	predicted_non, score_non = predict(model, test_features_non.astype("float"), test_labels_non.astype("float"))
+
+	print_results(ppackets, predicted_non)
 	
 
 if __name__ == "__main__":
