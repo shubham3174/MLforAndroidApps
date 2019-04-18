@@ -107,32 +107,23 @@ def parse_file(file, appname):
 	
 def parse_live(model):
 	first_ppacket = True
-	
-	csv_file = open("giventraffic.csv", "wb")
-	writer = csv.writer(csv_file, delimiter=',')
 
 	live_cap = pyshark.LiveCapture(interface="eth1")
 	iterate = live_cap.sniff_continuously
 	
 	for packet in iterate():
-		ppacket = parse_packet(packet, "NoIdea")
+		ppacket = parse_packet(packet)
 		if ppacket is not None:
 			if first_ppacket == True:
 				burst = Burst(ppacket)
 				first_ppacket = False
 			else:
 				if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
-					burst.pretty_print()
-					burst.write_to_csv(writer)
+					test_features, test_labels = burst.get_data()
 					
-					csv_file.close()
-					test_features, test_labels = export_data("giventraffic.csv")
-					predicted = predict(model, test_features, test_labels)
+					predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
 					print_results(burst.ppackets, predicted)
-					
-					csv_file = open("giventraffic.csv", "wb")
-					writer = csv.writer(csv_file, delimiter=',')
-					
+
 					burst.clean_me()
 					burst = Burst(ppacket)
 				else:
@@ -180,30 +171,22 @@ def main():
 			else:
 				gen = 0
 
-		ppackets = parse_file(args.testing, gen)
-
-		burst = Burst(ppackets[0])
-
-		csv_file = open("giventraffic.csv", "wb")
-		writer = csv.writer(csv_file, delimiter=',')
+		model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
 		
+		ppackets = parse_file(args.testing, gen)
+		burst = Burst(ppackets[0])
 		for ppacket in ppackets[1:]:
 			if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
-				#burst.pretty_print()
-				burst.write_to_csv(writer)
+				test_features, test_labels = burst.get_data()
+				
+				predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
+				print_results(burst.ppackets, predicted)
+				
 				burst.clean_me()
 				burst = Burst(ppacket)
 			else:
 				burst.add_ppacket(ppacket)
-				
-		csv_file.close()
-	
-		test_features, test_labels = export_data("giventraffic.csv")
-
-		model = train_model_tree(train_features.astype("float"), train_labels.astype("float"))
-		predicted = predict(model, test_features.astype("float"), test_labels.astype("float"))
-
-		print_results(ppackets, predicted)
+			
 	
 
 if __name__ == "__main__":

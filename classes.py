@@ -1,3 +1,5 @@
+import numpy as np
+
 # burst structure
 class Burst():
 	timestamp_lastrecvppacket = 0.0
@@ -36,6 +38,21 @@ class Burst():
 	def write_to_csv(self, writer):
 		for flow in self.flows:
 			flow.write_to_csv(writer)
+			
+	def get_data(self):
+		first = 1
+		for flow in self.flows:
+			if first:
+				features = flow.add_first_feature_row(features)
+				labels = flow.add_first_label_row(labels)
+				first = 0
+			else: 
+				features = flow.add_feature_row(features)
+				labels = flow.add_label_row(labels)
+
+		return features, labels
+			
+			
 
 class Flow():
 	timestamp = None
@@ -110,6 +127,19 @@ class Flow():
 	def write_to_csv(self, writer):
 		# write the flow to the csv
 		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, self.label, self.integer_protocol, self.ethtype, self.ttl, self.flags, self.proto])
+		
+		
+	def add_first_feature_row(self):
+		return np.array([self.num_packets_sent, self.num_bytes_sent, self.integer_protocol])
+		
+	def add_first_label_row(self):
+		return np.array([self.label])
+		
+	def add_feature_row(self, features):
+		return np.vstack((features, [self.num_packets_sent, self.num_bytes_sent, self.integer_protocol]))
+		
+	def add_label_row(self, labels):
+		return np.vstack((labels, [self.label]))
 		
 	def update_label(self, label):
 		self.label = label
