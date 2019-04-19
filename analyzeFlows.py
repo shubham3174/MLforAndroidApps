@@ -65,7 +65,7 @@ def parse_live(model):
 	iterate = live_cap.sniff_continuously
 		
 	for packet in iterate():
-		ppacket = parse_packet(packet)
+		ppacket = parse_packet(packet, "Unknown")
 		if ppacket is not None:
 			if first_ppacket == True:
 				burst = Burst(ppacket)
