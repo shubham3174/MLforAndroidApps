@@ -75,6 +75,10 @@ class Flow():
 	ttl = None
 	flags = None 
 	proto = None
+
+	# new ones
+	mean_len = None
+	total_duration = None 
 	
 
 	def __init__(self, ppacket):
@@ -95,6 +99,9 @@ class Flow():
 		self.ttl = ppacket.ttl 
 		self.flags = ppacket.flags 
 		self.proto = ppacket.proto
+		self.num_bytes_sent = ppacket.num_bytes
+		self.mean_len = ppacket.num_bytes
+		self.total_duration = ppacket.timestamp - self.timestamp
 
 
 	def add_ppacket(self, ppacket):
@@ -102,6 +109,8 @@ class Flow():
 		self.num_packets_sent += 1
 		self.num_bytes_sent += ppacket.num_bytes
 #		self.ttl = (self.ttl + ppacket.ttl) / 2
+		self.mean_len = (self.mean_len + ppacket.num_bytes) / 2
+		self.total_duration = ppacket.timestamp - self.timestamp
 
 	def clean_me(self):
 #		print self.packets
@@ -130,17 +139,17 @@ class Flow():
 		
 	def write_to_csv(self, writer):
 		# write the flow to the csv
-		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, self.label, self.integer_protocol, self.ethtype, self.ttl, self.flags, self.proto])
+		writer.writerow([self.timestamp, self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.protocol, self.num_packets_sent, self.num_bytes_sent, self.label, self.integer_protocol, self.ethtype, self.ttl, self.flags, self.proto, self.mean_len, self.total_duration])
 		
 		
 	def add_first_feature_row(self):
-		return np.array([self.num_packets_sent, self.num_bytes_sent, self.integer_protocol])
+		return np.array([self.num_packets_sent, self.integer_protocol, self.num_bytes_sent, self.mean_len, self.total_duration])
 		
 	def add_first_label_row(self):
 		return np.array([self.label])
 		
 	def add_feature_row(self, features):
-		return np.vstack((features, [self.num_packets_sent, self.integer_protocol, self.num_bytes_sent]))
+		return np.vstack((features, [self.num_packets_sent, self.integer_protocol, self.num_bytes_sent, self.mean_len, self.total_duration]))
 		
 	def add_label_row(self, labels):
 		return np.vstack((labels, [self.label]))

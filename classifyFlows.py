@@ -30,11 +30,11 @@ def export_data(file):
 		reader = csv.reader(csv_file, delimiter=',')
 		for row in reader:
 			if first: 
-				features = np.array([row[6], row[9], row[7]])
+				features = np.array([row[6], row[9], row[7], row[14], row[15]])
 				labels = np.array([row[8]])
 				first = 0
 			else:
-				features = np.vstack((features, [row[6], row[9], row[7]]))
+				features = np.vstack((features, [row[6], row[9], row[7], row[14], row[15]]))
 				labels = np.vstack((labels, [row[8]]))		
 	return features, labels
 
