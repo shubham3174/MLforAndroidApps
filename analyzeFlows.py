@@ -65,7 +65,7 @@ def parse_live(model):
 	iterate = live_cap.sniff_continuously
 		
 	for packet in iterate():
-		ppacket = parse_packet(packet, "Unknown")
+		ppacket = parse_packet(packet, 0)
 		if ppacket is not None:
 			if first_ppacket == True:
 				burst = Burst(ppacket)
@@ -98,12 +98,14 @@ def predict(fitted, test, test_labels):
 	predicted = fitted.predict(test)
 	score = fitted.score(test, test_labels)
 
-	print 'Predicted: ', predicted
-	print 'Mean Accuracy: ', score
+#	print 'Predicted: ', predicted
+#	print 'Mean Accuracy: ', score
 
 	return predicted, score
 	
 def print_results(ppackets, predicted):
+	if len(ppackets) == 0:
+		return
 	new_predicted = []
 	for n, i in enumerate(predicted):
 		if i== 1:
@@ -118,9 +120,11 @@ def print_results(ppackets, predicted):
 			new_predicted.append("FruitNinja")
 	burst = Burst(ppackets[0])
 	i = 0
-	
+	j = 0	
+
 	for ppacket in ppackets[1:]:
-		if ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
+		j += 1
+		if (j+1) == len(ppackets) or ppacket.timestamp >= burst.timestamp_lastrecvppacket + 1.0:
 			for flow in burst.flows:
 				flow.label = new_predicted[i]
 				i += 1
