@@ -77,7 +77,7 @@ class Flow():
 	proto = None
 
 	# new ones
-	mean_len = None
+	mean_len = 0
 	total_duration = None 
 	
 
